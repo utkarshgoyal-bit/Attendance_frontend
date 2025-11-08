@@ -5,7 +5,7 @@ import EmployeeTable from './pages/EmployeeTable';
 import Login from './pages/login';
 import AdminPanel from './pages/admin/AdminPanel';
 import SalaryManagement from './pages/admin/SalaryManagement';
-
+import QRDisplay from './pages/attendance/QRDisplay';
 function App() {
   return (
     <Router>
