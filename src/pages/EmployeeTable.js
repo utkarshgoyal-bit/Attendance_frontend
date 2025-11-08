@@ -63,14 +63,23 @@ const EmployeeTable = () => {
       }
 
       // Fetch with query parameters
-      const data = await fetchEmployees(
+      const response = await fetchEmployees(
         selectedMonth,
         selectedYear,
         selectedBranch,
         debouncedSearch
       );
 
-      console.log("Fetched employees:", data);
+      console.log("Fetched employees:", response);
+
+      // Ensure response has employees array
+      if (!response || !response.employees || !Array.isArray(response.employees)) {
+        console.error("Invalid data received: expected an object with employees array, got:", response);
+        setEmployees([]);
+        return;
+      }
+
+      const data = response.employees;
 
       // Map the data (keep existing mapping logic)
       const filtered = data.map((emp) => {

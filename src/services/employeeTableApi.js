@@ -2,9 +2,16 @@ import axios from "axios";
 
 const API_BASE_URL = "http://localhost:5000/api";
 
-export const fetchEmployees = async () => {
+export const fetchEmployees = async (selectedMonth, selectedYear, selectedBranch, debouncedSearch) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/employees`);
+    const params = new URLSearchParams({
+      month: selectedMonth,
+      year: selectedYear,
+      branch: selectedBranch,
+      search: debouncedSearch,
+    });
+    const response = await axios.get(`${API_BASE_URL}/employees?${params.toString()}`);
+    console.log("Fetched employees:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching employees:", error);
