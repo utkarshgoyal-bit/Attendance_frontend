@@ -15,6 +15,7 @@ function App() {
           <Route path="/home" element={<Home />} />
           <Route path="/employees" element={<EmployeeTable />} />
           <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/attendance/display" element={<QRDisplay />} />
           <Route path="/admin/salary-management" element={<SalaryManagement />} />
         </Routes>
       </div>
