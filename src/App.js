@@ -6,6 +6,7 @@ import Login from './pages/login';
 import AdminPanel from './pages/admin/AdminPanel';
 import SalaryManagement from './pages/admin/SalaryManagement';
 import QRDisplay from './pages/attendance/QRDisplay';
+import EmployeeCheckin from './pages/attendance/EmployeeCheckin';
 function App() {
   return (
     <Router>
@@ -16,6 +17,7 @@ function App() {
           <Route path="/employees" element={<EmployeeTable />} />
           <Route path="/admin" element={<AdminPanel />} />
           <Route path="/attendance/display" element={<QRDisplay />} />
+          <Route path="/attendance/checkin" element={<EmployeeCheckin />} />
           <Route path="/admin/salary-management" element={<SalaryManagement />} />
         </Routes>
       </div>
