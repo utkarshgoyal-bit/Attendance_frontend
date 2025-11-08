@@ -15,10 +15,13 @@ const AdminPanel = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [employeesData, configData] = await Promise.all([
-          fetchEmployees(),
+        const [employeesResponse, configData] = await Promise.all([
+          fetchEmployees(), // This now returns paginated object
           fetchSalaryConfig()
         ]);
+
+        // Extract employees array from paginated response
+        const employeesData = employeesResponse.employees || employeesResponse;
         setEmployees(employeesData);
         setSalaryConfig(configData);
       } catch (error) {

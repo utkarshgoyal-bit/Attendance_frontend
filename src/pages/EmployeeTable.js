@@ -5,10 +5,12 @@ import { fetchEmployees, saveSalary, updateSalary } from "../services/employeeTa
 import { fetchSalaryConfig } from "../services/salaryConfigApi";
 import { calculateNetPayable, calculateCTC } from "../utils/calculations";
 import { ChevronLeft } from "lucide-react";
+import { getCache, setCache } from "../services/cacheService";
 
 const EmployeeTable = () => {
   const [employees, setEmployees] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedMonth, setSelectedMonth] = useState("October");
   const [selectedYear, setSelectedYear] = useState("2025");
   const [selectedBranch, setSelectedBranch] = useState("All");
@@ -24,10 +26,19 @@ const EmployeeTable = () => {
     return new Date(parseInt(year), monthIndex + 1, 0).getDate();
   };
 
+  // Debounce search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 500); // Wait 500ms after user stops typing
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
   useEffect(() => {
     fetchEmployeesData();
     fetchSalaryConfigData();
-  }, [selectedMonth, selectedYear, selectedBranch]);
+  }, [selectedMonth, selectedYear, selectedBranch, debouncedSearch]);
 
   const fetchSalaryConfigData = async () => {
     try {
@@ -41,10 +52,27 @@ const EmployeeTable = () => {
 
   const fetchEmployeesData = async () => {
     try {
-      const data = await fetchEmployees();
+      // Create cache key based on filters
+      const cacheKey = `employees-${selectedMonth}-${selectedYear}-${selectedBranch}-${debouncedSearch}`;
+
+      // Check cache first (5 min TTL)
+      const cachedData = getCache(cacheKey);
+      if (cachedData) {
+        setEmployees(cachedData);
+        return;
+      }
+
+      // Fetch with query parameters
+      const data = await fetchEmployees(
+        selectedMonth,
+        selectedYear,
+        selectedBranch,
+        debouncedSearch
+      );
 
       console.log("Fetched employees:", data);
 
+      // Map the data (keep existing mapping logic)
       const filtered = data.map((emp) => {
         const salary = emp.salaries?.find(s => s.month === selectedMonth && s.year === parseInt(selectedYear));
         return {
@@ -61,6 +89,8 @@ const EmployeeTable = () => {
         };
       });
 
+      // Cache for 5 minutes
+      setCache(cacheKey, filtered, 300000);
       setEmployees(filtered);
     } catch (error) {
       console.error("Error fetching employees:", error);
@@ -147,8 +177,6 @@ const EmployeeTable = () => {
   };
 
   const filteredAndSortedEmployees = employees
-    .filter((emp) => emp.name.toLowerCase().includes(searchTerm.toLowerCase()))
-    .filter((emp) => selectedBranch === "All" || emp.branch === selectedBranch)
     .sort((a, b) => {
       if (!sortBy) return 0;
       let aVal, bVal;
