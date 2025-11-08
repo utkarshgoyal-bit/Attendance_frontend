@@ -140,32 +140,16 @@ const EmployeeCheckin = () => {
    * Handle form submission - Mark attendance
    */
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // Prevent form default behavior
 
-    // Validate employee ID
-    if (!employeeId.trim()) {
-      setStatus({
-        type: 'error',
-        message: 'Please enter your Employee ID'
-      });
+    // Validation
+    if (!employeeId || employeeId.trim() === '') {
+      setStatus({ type: 'error', message: 'Please enter your Employee ID' });
       return;
     }
 
-    // Check if QR is validated
-    if (!qrValidated) {
-      setStatus({
-        type: 'error',
-        message: 'QR code is not valid. Please refresh and try again.'
-      });
-      return;
-    }
-
-    // Check if QR data exists
     if (!qrData) {
-      setStatus({
-        type: 'error',
-        message: 'QR code not loaded. Please refresh the page.'
-      });
+      setStatus({ type: 'error', message: 'QR code not loaded. Please refresh.' });
       return;
     }
 
@@ -173,25 +157,48 @@ const EmployeeCheckin = () => {
     setStatus(null);
 
     try {
-      console.log('Submitting attendance for employee:', employeeId);
+      // Step 1: Validate QR
+      console.log('Validating QR...', qrData);
+      const validation = await apiClient.post('/attendance/qr/validate', {
+        qrData: qrData
+      });
 
-      // Mark attendance via API
+      console.log('QR Validation response:', validation.data);
+
+      if (!validation.data.valid) {
+        setStatus({
+          type: 'error',
+          message: validation.data.reason || 'QR code is invalid'
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Step 2: Mark attendance
+      console.log('Marking attendance...');
+      console.log('Request payload:', {
+        employeeId: employeeId.trim(),
+        qrCodeId: qrData.qrCodeId,
+        branchId: qrData.branchId
+      });
+
       const response = await apiClient.post('/attendance/checkin', {
         employeeId: employeeId.trim(),
         qrCodeId: qrData.qrCodeId,
         branchId: qrData.branchId
       });
 
-      console.log('Attendance marked successfully:', response.data);
+      console.log('Attendance response:', response.data);
 
-      // Show success message
+      // Success
+      const attendanceStatus = response.data.attendance?.autoStatus || autoStatus?.label || 'Marked';
       setStatus({
         type: 'success',
-        message: `Attendance marked successfully! ✓`,
+        message: `Attendance marked successfully! Status: ${attendanceStatus}`,
         details: {
           employeeId: employeeId.trim(),
           time: getCurrentTime(),
-          status: autoStatus.label
+          status: attendanceStatus
         }
       });
 
@@ -201,18 +208,15 @@ const EmployeeCheckin = () => {
         setStatus(null);
         // Refresh QR code for next use
         fetchCurrentQR();
+        calculateAutoStatus();
       }, 3000);
 
     } catch (error) {
-      console.error('Error marking attendance:', error);
+      console.error('Error details:', error);
+      console.error('Error response:', error.response);
 
-      // Handle specific error cases
-      const errorMessage = error.response?.data?.message || 'Failed to mark attendance. Please try again.';
-
-      setStatus({
-        type: 'error',
-        message: errorMessage
-      });
+      const errorMsg = error.response?.data?.message || error.message || 'Failed to mark attendance';
+      setStatus({ type: 'error', message: errorMsg });
     } finally {
       setLoading(false);
     }
