@@ -162,16 +162,22 @@ const EmployeeCheckin = () => {
    * Handle form submission - Mark attendance
    */
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Prevent form default behavior
+    e.preventDefault();
 
     // Validation
     if (!employeeId || employeeId.trim() === '') {
-      setStatus({ type: 'error', message: 'Please enter your Employee ID' });
+      setStatus({
+        type: 'error',
+        message: 'Please enter your Employee ID'
+      });
       return;
     }
 
     if (!qrData) {
-      setStatus({ type: 'error', message: 'QR code not loaded. Please refresh.' });
+      setStatus({
+        type: 'error',
+        message: 'QR code not loaded. Please scan QR code again.'
+      });
       return;
     }
 
@@ -179,31 +185,27 @@ const EmployeeCheckin = () => {
     setStatus(null);
 
     try {
-      // Step 1: Validate QR
-      console.log('Validating QR...', qrData);
+      console.log('Validating QR code...');
+
+      // Step 1: Validate QR code
       const validation = await apiClient.post('/attendance/qr/validate', {
         qrData: qrData
       });
 
-      console.log('QR Validation response:', validation.data);
+      console.log('Validation result:', validation.data);
 
       if (!validation.data.valid) {
         setStatus({
           type: 'error',
-          message: validation.data.reason || 'QR code is invalid'
+          message: validation.data.reason || 'QR code is invalid or expired. Please scan again.'
         });
         setLoading(false);
         return;
       }
 
-      // Step 2: Mark attendance
       console.log('Marking attendance...');
-      console.log('Request payload:', {
-        employeeId: employeeId.trim(),
-        qrCodeId: qrData.qrCodeId,
-        branchId: qrData.branchId
-      });
 
+      // Step 2: Mark attendance
       const response = await apiClient.post('/attendance/checkin', {
         employeeId: employeeId.trim(),
         qrCodeId: qrData.qrCodeId,
@@ -212,33 +214,40 @@ const EmployeeCheckin = () => {
 
       console.log('Attendance response:', response.data);
 
-      // Success
+      // Success - Show pending approval message
       const attendanceStatus = response.data.attendance?.autoStatus || autoStatus?.label || 'Marked';
       setStatus({
         type: 'success',
-        message: `Attendance marked successfully! Status: ${attendanceStatus}`,
+        message: '✓ Attendance marked successfully!',
         details: {
           employeeId: employeeId.trim(),
           time: getCurrentTime(),
-          status: attendanceStatus
+          status: attendanceStatus,
+          pending: true
         }
       });
 
-      // Clear form after 3 seconds
+      // Clear form after 5 seconds
       setTimeout(() => {
         setEmployeeId('');
         setStatus(null);
-        // Refresh QR code for next use
-        fetchCurrentQR();
-        calculateAutoStatus();
-      }, 3000);
+      }, 5000);
 
     } catch (error) {
-      console.error('Error details:', error);
-      console.error('Error response:', error.response);
+      console.error('Error marking attendance:', error);
 
-      const errorMsg = error.response?.data?.message || error.message || 'Failed to mark attendance';
-      setStatus({ type: 'error', message: errorMsg });
+      let errorMessage = 'Failed to mark attendance. Please try again.';
+
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      setStatus({
+        type: 'error',
+        message: errorMessage
+      });
     } finally {
       setLoading(false);
     }
@@ -262,21 +271,21 @@ const EmployeeCheckin = () => {
 
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="text-5xl mb-3">📍</div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+          <div className="text-6xl mb-4">📍</div>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">
             Mark Your Attendance
           </h1>
-          <p className="text-gray-600 text-sm">
+          <p className="text-gray-600 text-base">
             {getCurrentDate()}
           </p>
         </div>
 
         {/* QR Status Section */}
-        <div className="bg-gray-50 rounded-xl p-6 mb-6 space-y-3">
+        <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 mb-6 space-y-4 border border-gray-200">
           {/* QR Validation Status */}
           <div className="flex items-center justify-between">
-            <span className="text-gray-600 font-medium">QR Code:</span>
-            <span className={`font-semibold ${qrValidated ? 'text-green-600' : 'text-gray-400'}`}>
+            <span className="text-gray-700 font-semibold text-base">QR Code:</span>
+            <span className={`font-bold text-base ${qrValidated ? 'text-green-600' : 'text-gray-400'}`}>
               {qrValidated ? '✓ Valid' : '⏳ Loading...'}
             </span>
           </div>
@@ -284,22 +293,22 @@ const EmployeeCheckin = () => {
           {/* Branch */}
           {qrData && (
             <div className="flex items-center justify-between">
-              <span className="text-gray-600 font-medium">Branch:</span>
-              <span className="text-gray-800 font-semibold">{qrData.branchId} Office</span>
+              <span className="text-gray-700 font-semibold text-base">Branch:</span>
+              <span className="text-gray-900 font-bold text-base">{qrData.branchId} Office</span>
             </div>
           )}
 
           {/* Current Time */}
           <div className="flex items-center justify-between">
-            <span className="text-gray-600 font-medium">Time:</span>
-            <span className="text-gray-800 font-semibold">{getCurrentTime()}</span>
+            <span className="text-gray-700 font-semibold text-base">Time:</span>
+            <span className="text-gray-900 font-bold text-base">{getCurrentTime()}</span>
           </div>
 
           {/* Auto Status */}
           {autoStatus && (
             <div className="flex items-center justify-between">
-              <span className="text-gray-600 font-medium">Status:</span>
-              <span className={`font-bold text-lg ${autoStatus.color}`}>
+              <span className="text-gray-700 font-semibold text-base">Status:</span>
+              <span className={`font-bold text-xl ${autoStatus.color}`}>
                 {autoStatus.label}
               </span>
             </div>
@@ -308,8 +317,8 @@ const EmployeeCheckin = () => {
 
         {/* Status Badge */}
         {autoStatus && (
-          <div className={`${autoStatus.bg} ${autoStatus.border} border-2 rounded-xl p-4 mb-6 text-center`}>
-            <p className={`${autoStatus.color} font-bold text-xl`}>
+          <div className={`${autoStatus.bg} ${autoStatus.border} border-2 rounded-xl p-5 mb-6 text-center`}>
+            <p className={`${autoStatus.color} font-bold text-2xl`}>
               {autoStatus.label}
             </p>
           </div>
@@ -318,7 +327,7 @@ const EmployeeCheckin = () => {
         {/* Employee ID Input Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="employeeId" className="block text-gray-700 font-semibold mb-2">
+            <label htmlFor="employeeId" className="block text-gray-700 font-semibold mb-3 text-lg">
               Enter Employee ID:
             </label>
             <input
@@ -327,8 +336,10 @@ const EmployeeCheckin = () => {
               value={employeeId}
               onChange={(e) => setEmployeeId(e.target.value)}
               placeholder="e.g., EMP123"
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
+              className="w-full px-5 py-4 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xl font-medium"
               disabled={loading || !qrValidated}
+              autoFocus
+              autoComplete="off"
             />
           </div>
 
@@ -336,15 +347,16 @@ const EmployeeCheckin = () => {
           <button
             type="submit"
             disabled={loading || !qrValidated}
-            className={`w-full py-4 rounded-xl font-bold text-lg transition-all duration-200 ${
+            className={`w-full py-5 rounded-xl font-bold text-xl transition-all duration-200 ${
               loading || !qrValidated
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95 shadow-lg'
             }`}
+            style={{ minHeight: '60px' }}
           >
             {loading ? (
-              <div className="flex items-center justify-center gap-2">
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+              <div className="flex items-center justify-center gap-3">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
                 <span>Marking Attendance...</span>
               </div>
             ) : (
@@ -355,31 +367,64 @@ const EmployeeCheckin = () => {
 
         {/* Status Messages */}
         {status && (
-          <div className={`mt-6 p-4 rounded-xl ${
+          <div className={`mt-6 p-6 rounded-xl ${
             status.type === 'success'
               ? 'bg-green-50 border-2 border-green-200'
               : 'bg-red-50 border-2 border-red-200'
           }`}>
-            <p className={`font-semibold text-center ${
-              status.type === 'success' ? 'text-green-700' : 'text-red-700'
-            }`}>
-              {status.message}
-            </p>
+            <div className="text-center mb-3">
+              <div className={`text-4xl mb-2 ${
+                status.type === 'success' ? '' : ''
+              }`}>
+                {status.type === 'success' ? '✓' : '✗'}
+              </div>
+              <p className={`font-bold text-xl ${
+                status.type === 'success' ? 'text-green-700' : 'text-red-700'
+              }`}>
+                {status.message}
+              </p>
+            </div>
 
             {/* Success Details */}
             {status.details && (
-              <div className="mt-3 space-y-1 text-sm text-green-600">
-                <p>Employee ID: <strong>{status.details.employeeId}</strong></p>
-                <p>Time: <strong>{status.details.time}</strong></p>
-                <p>Status: <strong>{status.details.status}</strong></p>
+              <div className="space-y-3">
+                <div className="border-t border-green-200 pt-3 mt-3">
+                  <div className="space-y-2 text-base text-green-700">
+                    <div className="flex justify-between">
+                      <span className="font-medium">Employee ID:</span>
+                      <span className="font-bold">{status.details.employeeId}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-medium">Time:</span>
+                      <span className="font-bold">{status.details.time}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-medium">Status:</span>
+                      <span className="font-bold">{status.details.status}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Pending Approval Message */}
+                {status.details.pending && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-3">
+                    <div className="flex items-center gap-2 text-yellow-700">
+                      <div className="text-2xl">⏳</div>
+                      <div>
+                        <p className="font-semibold text-base">Waiting for manager approval</p>
+                        <p className="text-sm mt-1">Your attendance has been recorded and is pending approval.</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
         )}
 
         {/* Help Text */}
-        <div className="mt-6 text-center text-sm text-gray-500">
-          <p>Need help? Contact HR support</p>
+        <div className="mt-6 text-center">
+          <p className="text-base text-gray-500">Need help? Contact HR support</p>
         </div>
       </div>
     </div>
