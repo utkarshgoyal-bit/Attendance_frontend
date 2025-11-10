@@ -13,6 +13,8 @@ const ManagerDashboard = () => {
   const [actionLoading, setActionLoading] = useState(null);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectData, setRejectData] = useState({ id: null, reason: '' });
+  const [lastRefreshTime, setLastRefreshTime] = useState(new Date()); // FEATURE 1: Auto-refresh tracking
+  const [bulkApproving, setBulkApproving] = useState(false); // FEATURE 3: Bulk approve loading state
 
   // Mock manager ID - In production, get from auth context/session
   const MANAGER_ID = '671fb19cf66b19b6c3754321'; // Replace with actual logged-in user ID
@@ -21,14 +23,26 @@ const ManagerDashboard = () => {
     loadAttendance();
   }, [filter, selectedBranch, refreshTrigger]);
 
+  // ========== FEATURE 1: AUTO-REFRESH EVERY 30 SECONDS ==========
+  useEffect(() => {
+    const interval = setInterval(() => {
+      console.log('Auto-refreshing attendance data...');
+      loadAttendance();
+      setLastRefreshTime(new Date());
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
+  }, [filter, selectedBranch]);
+
   const loadAttendance = async () => {
     try {
       setLoading(true);
       const branch = selectedBranch === 'All' ? '' : selectedBranch;
       const status = filter === 'ALL' ? '' : filter;
-      
+
       const response = await getTodayAttendance(branch, status);
       setAttendanceRecords(response.attendance || []);
+      setLastRefreshTime(new Date()); // Update refresh time on successful load
     } catch (error) {
       console.error('Error loading attendance:', error);
       alert('Failed to load attendance records');
@@ -78,6 +92,41 @@ const ManagerDashboard = () => {
       alert('Failed to reject attendance');
     } finally {
       setActionLoading(null);
+    }
+  };
+
+  // ========== FEATURE 3: BULK APPROVE ALL PENDING ==========
+  const handleBulkApprove = async () => {
+    const pendingList = attendanceRecords.filter(a => a.status === 'PENDING');
+
+    if (pendingList.length === 0) {
+      alert('No pending approvals');
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Approve all ${pendingList.length} pending check-ins?`
+    );
+
+    if (!confirmed) return;
+
+    setBulkApproving(true);
+
+    try {
+      // Approve all pending in parallel
+      const promises = pendingList.map(attendance =>
+        approveAttendance(attendance._id, MANAGER_ID)
+      );
+
+      await Promise.all(promises);
+
+      alert(`Successfully approved ${pendingList.length} attendance records!`);
+      setRefreshTrigger(prev => prev + 1); // Refresh data
+    } catch (error) {
+      console.error('Bulk approve error:', error);
+      alert('Some approvals failed. Please try again.');
+    } finally {
+      setBulkApproving(false);
     }
   };
 
@@ -155,9 +204,9 @@ const ManagerDashboard = () => {
         </div>
 
         <div className="container mx-auto px-4 py-8">
-          {/* Stats Cards */}
+          {/* Stats Cards - FEATURE 5: Added hover animations */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-            <div className="bg-white rounded-lg shadow-lg p-6">
+            <div className="bg-white rounded-lg shadow-lg p-6 transition-all duration-200 hover:shadow-xl transform hover:-translate-y-1">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Total Today</p>
@@ -167,7 +216,7 @@ const ManagerDashboard = () => {
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-lg p-6">
+            <div className="bg-white rounded-lg shadow-lg p-6 transition-all duration-200 hover:shadow-xl transform hover:-translate-y-1">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Pending</p>
@@ -177,7 +226,7 @@ const ManagerDashboard = () => {
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-lg p-6">
+            <div className="bg-white rounded-lg shadow-lg p-6 transition-all duration-200 hover:shadow-xl transform hover:-translate-y-1">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Approved</p>
@@ -187,7 +236,7 @@ const ManagerDashboard = () => {
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-lg p-6">
+            <div className="bg-white rounded-lg shadow-lg p-6 transition-all duration-200 hover:shadow-xl transform hover:-translate-y-1">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Rejected</p>
@@ -205,7 +254,7 @@ const ManagerDashboard = () => {
               <select
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
               >
                 <option value="PENDING">Pending</option>
                 <option value="APPROVED">Approved</option>
@@ -217,20 +266,48 @@ const ManagerDashboard = () => {
               <select
                 value={selectedBranch}
                 onChange={(e) => setSelectedBranch(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
               >
                 <option value="All">All Branches</option>
                 <option value="JAIPUR">Jaipur</option>
                 <option value="DEHRADUN">Dehradun</option>
               </select>
 
+              {/* FEATURE 1: Last Refresh Time Display */}
+              <div className="text-sm text-gray-500 ml-auto">
+                Last updated: {Math.floor((new Date() - lastRefreshTime) / 1000)}s ago
+              </div>
+
               <button
                 onClick={() => setRefreshTrigger(prev => prev + 1)}
-                className="ml-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-all duration-200 active:scale-95"
               >
                 Refresh
               </button>
             </div>
+
+            {/* FEATURE 3: Bulk Approve Button - Only show for PENDING filter */}
+            {filter === 'PENDING' && stats.pending > 0 && (
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <button
+                  onClick={handleBulkApprove}
+                  disabled={bulkApproving}
+                  className="w-full py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all duration-200 hover:shadow-lg active:scale-95 flex items-center justify-center gap-2"
+                >
+                  {bulkApproving ? (
+                    <>
+                      <span className="animate-spin">⏳</span>
+                      <span>Approving...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-5 h-5" />
+                      <span>APPROVE ALL {stats.pending} PENDING</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Attendance Records Table */}
@@ -241,10 +318,49 @@ const ManagerDashboard = () => {
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
                 </div>
               ) : attendanceRecords.length === 0 ? (
+                // ========== FEATURE 4: BETTER EMPTY STATES ==========
                 <div className="text-center py-12">
-                  <AlertCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500 text-lg">No attendance records found</p>
-                  <p className="text-gray-400 text-sm mt-2">Try changing the filters or check back later</p>
+                  {filter === 'PENDING' ? (
+                    <>
+                      <div className="text-6xl mb-4">🎉</div>
+                      <p className="text-xl font-semibold text-gray-700 mb-2">
+                        No Pending Approvals
+                      </p>
+                      <p className="text-gray-500">
+                        All check-ins have been processed!
+                      </p>
+                    </>
+                  ) : filter === 'APPROVED' ? (
+                    <>
+                      <div className="text-6xl mb-4">📋</div>
+                      <p className="text-xl font-semibold text-gray-700 mb-2">
+                        No Approved Attendance
+                      </p>
+                      <p className="text-gray-500">
+                        Approved check-ins will appear here
+                      </p>
+                    </>
+                  ) : filter === 'REJECTED' ? (
+                    <>
+                      <div className="text-6xl mb-4">✅</div>
+                      <p className="text-xl font-semibold text-gray-700 mb-2">
+                        No Rejected Attendance
+                      </p>
+                      <p className="text-gray-500">
+                        Great! All check-ins were valid
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <AlertCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                      <p className="text-xl font-semibold text-gray-700 mb-2">
+                        No Attendance Records
+                      </p>
+                      <p className="text-gray-500">
+                        No check-ins found for today
+                      </p>
+                    </>
+                  )}
                 </div>
               ) : (
                 <table className="min-w-full divide-y divide-gray-200">
@@ -275,7 +391,7 @@ const ManagerDashboard = () => {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {attendanceRecords.map((record) => (
-                      <tr key={record._id} className="hover:bg-gray-50">
+                      <tr key={record._id} className="hover:bg-gray-50 transition-colors duration-150">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div className="flex-shrink-0 h-10 w-10 bg-blue-500 rounded-full flex items-center justify-center">
@@ -312,7 +428,7 @@ const ManagerDashboard = () => {
                               <button
                                 onClick={() => handleApprove(record._id)}
                                 disabled={actionLoading === record._id}
-                                className="inline-flex items-center px-3 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                className="inline-flex items-center px-3 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:shadow-lg active:scale-95"
                               >
                                 {actionLoading === record._id ? (
                                   <span className="animate-spin mr-2">⏳</span>
@@ -324,7 +440,7 @@ const ManagerDashboard = () => {
                               <button
                                 onClick={() => openRejectModal(record._id)}
                                 disabled={actionLoading === record._id}
-                                className="inline-flex items-center px-3 py-1.5 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                className="inline-flex items-center px-3 py-1.5 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:shadow-lg active:scale-95"
                               >
                                 <XCircle className="w-4 h-4 mr-1" />
                                 Reject
@@ -348,33 +464,78 @@ const ManagerDashboard = () => {
         </div>
       </div>
 
-      {/* Reject Modal */}
+      {/* ========== FEATURE 2: REJECTION REASON MODAL ========== */}
       {showRejectModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-all">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-2xl transform transition-all">
             <h3 className="text-xl font-bold text-gray-900 mb-4">Reject Attendance</h3>
-            <p className="text-gray-600 mb-4">Please provide a reason for rejecting this attendance:</p>
-            <textarea
-              value={rejectData.reason}
-              onChange={(e) => setRejectData({ ...rejectData, reason: e.target.value })}
-              placeholder="Enter rejection reason..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 mb-4"
-              rows="4"
-            />
-            <div className="flex gap-3 justify-end">
+            <p className="text-gray-600 mb-4">Please select a reason for rejecting this attendance:</p>
+
+            <div className="space-y-3 mb-6">
+              <label className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-all">
+                <input
+                  type="radio"
+                  name="reason"
+                  value="Not physically present"
+                  checked={rejectData.reason === "Not physically present"}
+                  onChange={(e) => setRejectData({ ...rejectData, reason: e.target.value })}
+                  className="mr-3 w-4 h-4 text-red-600 focus:ring-red-500"
+                />
+                <span className="text-gray-700">Not physically present</span>
+              </label>
+
+              <label className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-all">
+                <input
+                  type="radio"
+                  name="reason"
+                  value="Wrong employee ID"
+                  checked={rejectData.reason === "Wrong employee ID"}
+                  onChange={(e) => setRejectData({ ...rejectData, reason: e.target.value })}
+                  className="mr-3 w-4 h-4 text-red-600 focus:ring-red-500"
+                />
+                <span className="text-gray-700">Wrong employee ID</span>
+              </label>
+
+              <label className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-all">
+                <input
+                  type="radio"
+                  name="reason"
+                  value="Duplicate entry"
+                  checked={rejectData.reason === "Duplicate entry"}
+                  onChange={(e) => setRejectData({ ...rejectData, reason: e.target.value })}
+                  className="mr-3 w-4 h-4 text-red-600 focus:ring-red-500"
+                />
+                <span className="text-gray-700">Duplicate entry</span>
+              </label>
+
+              <label className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-all">
+                <input
+                  type="radio"
+                  name="reason"
+                  value="Other"
+                  checked={rejectData.reason === "Other"}
+                  onChange={(e) => setRejectData({ ...rejectData, reason: e.target.value })}
+                  className="mr-3 w-4 h-4 text-red-600 focus:ring-red-500"
+                />
+                <span className="text-gray-700">Other</span>
+              </label>
+            </div>
+
+            <div className="flex gap-3">
               <button
                 onClick={() => {
                   setShowRejectModal(false);
                   setRejectData({ id: null, reason: '' });
                 }}
-                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors"
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-200 active:scale-95"
               >
                 Cancel
               </button>
+
               <button
                 onClick={handleReject}
-                disabled={actionLoading === rejectData.id}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 transition-colors"
+                disabled={!rejectData.reason || actionLoading === rejectData.id}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all duration-200 active:scale-95"
               >
                 {actionLoading === rejectData.id ? 'Rejecting...' : 'Confirm Reject'}
               </button>
