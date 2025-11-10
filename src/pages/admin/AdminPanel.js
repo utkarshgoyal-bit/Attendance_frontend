@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Sidebar from './Sidebar';
-import { ChevronLeft, Users, DollarSign, Clock, FileText } from 'lucide-react';
+import { ChevronLeft, Users, DollarSign, Clock, FileText, ClipboardCheck } from 'lucide-react';
 import { fetchEmployees } from '../../services/employeeTableApi';
 import { fetchSalaryConfig } from '../../services/salaryConfigApi';
-import { calculateNetPayable } from '../../utils/calculations';
 
 const AdminPanel = () => {
   const [employees, setEmployees] = useState([]);
@@ -52,13 +51,13 @@ const AdminPanel = () => {
   return (
     <div className="min-h-screen bg-gray-100 flex">
       <Sidebar />
-      <div className="flex-1 transition-all duration-300 ease-in-out ">
+      <div className="flex-1 transition-all duration-300 ease-in-out">
         <div className="bg-white h-20 flex items-center justify-start px-6 m-4 rounded-lg shadow-lg">
           <Link
             to="/home"
             className="bg-gray-300 text-black py-2 px-2 rounded-full shadow-lg transform transition hover:scale-105 flex items-center gap-2 mr-4"
           >
-             <ChevronLeft className="w-5 h-5 " />
+            <ChevronLeft className="w-5 h-5" />
           </Link>
           <h1 className="text-4xl font-bold text-black">
             Admin Dashboard
@@ -142,7 +141,7 @@ const AdminPanel = () => {
 
           <div className="bg-white rounded-lg shadow-lg p-6">
             <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Link
                 to="/employee-table"
                 className="flex items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
@@ -161,6 +160,16 @@ const AdminPanel = () => {
                 <div>
                   <p className="font-medium text-gray-900">Salary Management Settings</p>
                   <p className="text-sm text-gray-600">Configure PF, ESI, and other deductions</p>
+                </div>
+              </Link>
+              <Link
+                to="/admin/attendance"
+                className="flex items-center p-4 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors"
+              >
+                <ClipboardCheck className="w-6 h-6 text-orange-600 mr-3" />
+                <div>
+                  <p className="font-medium text-gray-900">Attendance Management</p>
+                  <p className="text-sm text-gray-600">Approve/reject employee attendance</p>
                 </div>
               </Link>
             </div>
