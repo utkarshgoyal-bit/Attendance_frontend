@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import apiClient from '../../services/apiClient';
 
 const EmployeeCheckin = () => {
+  const [searchParams] = useSearchParams();
   // State management
   const [employeeId, setEmployeeId] = useState('');
   const [qrData, setQrData] = useState(null);
@@ -11,13 +13,33 @@ const EmployeeCheckin = () => {
   const [qrValidated, setQrValidated] = useState(false);
 
   /**
-   * On component mount: Fetch current QR (simulates scanning)
+   * On component mount: Get QR data from URL parameter or fetch current QR
    * Calculate auto status based on current time
    */
   useEffect(() => {
-    fetchCurrentQR();
+    const qrParam = searchParams.get('qr');
+
+    if (qrParam) {
+      try {
+        // Decode and parse QR data from URL
+        const decoded = decodeURIComponent(qrParam);
+        const parsedQR = JSON.parse(decoded);
+        setQrData(parsedQR);
+        console.log('QR Data loaded from URL:', parsedQR);
+
+        // Automatically validate the QR code
+        validateQRCode(parsedQR);
+      } catch (error) {
+        console.error('Invalid QR parameter:', error);
+        setStatus({ type: 'error', message: 'Invalid QR code' });
+      }
+    } else {
+      // Fallback: Fetch current QR if no parameter (for testing)
+      fetchCurrentQR();
+    }
+
     calculateAutoStatus();
-  }, []);
+  }, [searchParams]);
 
   /**
    * Fetch current QR code (simulates scanning QR at office entrance)

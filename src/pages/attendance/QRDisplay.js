@@ -163,7 +163,7 @@ const QRDisplay = () => {
         <div className="flex justify-center mb-10">
           <div className="bg-white p-8 rounded-2xl shadow-2xl border-4 border-blue-500">
             <QRCodeSVG
-              value={JSON.stringify(qrData)}
+              value={qrData?.qrURL || ''}
               size={500}
               level="H"
               includeMargin={true}
