@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import apiClient from '../../services/apiClient';
+import Toast from '../../components/Toast';
 
 const EmployeeCheckin = () => {
   const [searchParams] = useSearchParams();
@@ -9,6 +10,16 @@ const EmployeeCheckin = () => {
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(false);
   const [autoStatus, setAutoStatus] = useState('');
+  const [toast, setToast] = useState(null);
+
+  // Toast helper functions
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+  };
+
+  const closeToast = () => {
+    setToast(null);
+  };
 
   // On mount: Get QR data from URL
   useEffect(() => {
@@ -90,8 +101,12 @@ const EmployeeCheckin = () => {
 
       console.log('Success:', response.data);
 
-      setStatus({ 
-        type: 'success', 
+      // Show toast notification for quick feedback
+      showToast(`✓ Attendance marked! Status: ${response.data.attendance.autoStatus}. Waiting for approval...`, 'success');
+
+      // Keep detailed status display
+      setStatus({
+        type: 'success',
         message: `✓ Attendance Marked!\n\nEmployee: ${employeeId}\nTime: ${new Date().toLocaleTimeString()}\nStatus: ${response.data.attendance.autoStatus}\n\n⏳ Waiting for manager approval...`
       });
 
@@ -103,6 +118,11 @@ const EmployeeCheckin = () => {
     } catch (error) {
       console.error('Error:', error);
       const errorMsg = error.response?.data?.message || 'Failed to mark attendance';
+
+      // Show toast notification for quick feedback
+      showToast(errorMsg, 'error');
+
+      // Keep detailed status display
       setStatus({ type: 'error', message: errorMsg });
     } finally {
       setLoading(false);
@@ -177,8 +197,8 @@ const EmployeeCheckin = () => {
         {/* Status Message */}
         {status && (
           <div className={`mt-6 p-4 rounded-lg ${
-            status.type === 'success' 
-              ? 'bg-green-50 border-2 border-green-500' 
+            status.type === 'success'
+              ? 'bg-green-50 border-2 border-green-500'
               : 'bg-red-50 border-2 border-red-500'
           }`}>
             <p className={`text-sm font-medium whitespace-pre-line ${
@@ -190,6 +210,16 @@ const EmployeeCheckin = () => {
         )}
 
       </div>
+
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={closeToast}
+          duration={5000}
+        />
+      )}
     </div>
   );
 };

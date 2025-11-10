@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import Sidebar from '../admin/Sidebar';
 import { ChevronLeft, CheckCircle, XCircle, Clock, User, Calendar, AlertCircle } from 'lucide-react';
 import { getTodayAttendance, approveAttendance, rejectAttendance } from '../../services/attendanceApi';
+import Toast from '../../components/Toast';
 
 const ManagerDashboard = () => {
   const [attendanceRecords, setAttendanceRecords] = useState([]);
@@ -15,9 +16,19 @@ const ManagerDashboard = () => {
   const [rejectData, setRejectData] = useState({ id: null, reason: '' });
   const [lastRefreshTime, setLastRefreshTime] = useState(new Date()); // FEATURE 1: Auto-refresh tracking
   const [bulkApproving, setBulkApproving] = useState(false); // FEATURE 3: Bulk approve loading state
+  const [toast, setToast] = useState(null); // Toast notification state
 
   // Mock manager ID - In production, get from auth context/session
   const MANAGER_ID = '671fb19cf66b19b6c3754321'; // Replace with actual logged-in user ID
+
+  // ========== TOAST HELPERS ==========
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+  };
+
+  const closeToast = () => {
+    setToast(null);
+  };
 
   useEffect(() => {
     loadAttendance();
@@ -45,7 +56,7 @@ const ManagerDashboard = () => {
       setLastRefreshTime(new Date()); // Update refresh time on successful load
     } catch (error) {
       console.error('Error loading attendance:', error);
-      alert('Failed to load attendance records');
+      showToast('Failed to load attendance records', 'error');
     } finally {
       setLoading(false);
     }
@@ -59,11 +70,11 @@ const ManagerDashboard = () => {
     try {
       setActionLoading(attendanceId);
       await approveAttendance(attendanceId, MANAGER_ID);
-      alert('Attendance approved successfully!');
+      showToast('Attendance approved successfully!', 'success');
       setRefreshTrigger(prev => prev + 1); // Refresh data
     } catch (error) {
       console.error('Error approving attendance:', error);
-      alert('Failed to approve attendance');
+      showToast('Failed to approve attendance', 'error');
     } finally {
       setActionLoading(null);
     }
@@ -76,20 +87,20 @@ const ManagerDashboard = () => {
 
   const handleReject = async () => {
     if (!rejectData.reason.trim()) {
-      alert('Please provide a rejection reason');
+      showToast('Please provide a rejection reason', 'error');
       return;
     }
 
     try {
       setActionLoading(rejectData.id);
       await rejectAttendance(rejectData.id, MANAGER_ID, rejectData.reason);
-      alert('Attendance rejected successfully!');
+      showToast('Attendance rejected successfully!', 'success');
       setShowRejectModal(false);
       setRejectData({ id: null, reason: '' });
       setRefreshTrigger(prev => prev + 1); // Refresh data
     } catch (error) {
       console.error('Error rejecting attendance:', error);
-      alert('Failed to reject attendance');
+      showToast('Failed to reject attendance', 'error');
     } finally {
       setActionLoading(null);
     }
@@ -100,7 +111,7 @@ const ManagerDashboard = () => {
     const pendingList = attendanceRecords.filter(a => a.status === 'PENDING');
 
     if (pendingList.length === 0) {
-      alert('No pending approvals');
+      showToast('No pending approvals', 'error');
       return;
     }
 
@@ -120,11 +131,11 @@ const ManagerDashboard = () => {
 
       await Promise.all(promises);
 
-      alert(`Successfully approved ${pendingList.length} attendance records!`);
+      showToast(`✓ Approved ${pendingList.length} attendance records!`, 'success');
       setRefreshTrigger(prev => prev + 1); // Refresh data
     } catch (error) {
       console.error('Bulk approve error:', error);
-      alert('Some approvals failed. Please try again.');
+      showToast('Some approvals failed. Please try again.', 'error');
     } finally {
       setBulkApproving(false);
     }
@@ -542,6 +553,15 @@ const ManagerDashboard = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* ========== TOAST NOTIFICATION ========== */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={closeToast}
+        />
       )}
     </div>
   );
