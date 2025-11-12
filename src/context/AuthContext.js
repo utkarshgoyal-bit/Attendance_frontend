@@ -129,6 +129,14 @@ export const AuthProvider = ({ children }) => {
     setUser(prev => ({ ...prev, ...updates }));
   };
 
+  /**
+   * Change user role (for testing purposes)
+   * @param {string} newRole - New role to assign
+   */
+  const changeRole = (newRole) => {
+    setUser(prev => ({ ...prev, role: newRole }));
+  };
+
   const value = {
     user,
     setUser,
@@ -141,7 +149,8 @@ export const AuthProvider = ({ children }) => {
     isSuperAdmin,
     login,
     logout,
-    updateUser
+    updateUser,
+    changeRole
   };
 
   return (

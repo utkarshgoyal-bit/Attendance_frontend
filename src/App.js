@@ -12,25 +12,29 @@ import QRDisplay from './pages/attendance/QRDisplay';
 import EmployeeCheckin from './pages/attendance/EmployeeCheckin';
 import LeaveApplication from './pages/leave/LeaveApplication';
 import LeaveManagement from './pages/leave/LeaveManagement';
+import Layout from './components/Layout';
 
 function App() {
   return (
     <Router>
       <div className="App">
         <Routes>
-          <Route path="/" element={<Login />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/employees" element={<EmployeeTable />} />
-          <Route path="/employee-table" element={<EmployeeTable />} />
-          <Route path="/admin" element={<AdminPanel />} />
-          <Route path="/admin/salary-management" element={<SalaryManagement />} />
-          <Route path="/admin/salary-processing" element={<SalaryProcessing />} />
-          <Route path="/admin/config" element={<ConfigManagement />} />
-          <Route path="/admin/attendance" element={<ManagerDashboard />} />
-          <Route path="/attendance/display" element={<QRDisplay />} />
-          <Route path="/attendance/checkin" element={<EmployeeCheckin />} />
-          <Route path="/leave/apply" element={<LeaveApplication />} />
-          <Route path="/leave/manage" element={<LeaveManagement />} />
+          {/* Public routes - no sidebar */}
+          <Route path="/" element={<Layout fullWidth><Login /></Layout>} />
+
+          {/* Authenticated routes - with sidebar */}
+          <Route path="/home" element={<Layout><Home /></Layout>} />
+          <Route path="/employees" element={<Layout><EmployeeTable /></Layout>} />
+          <Route path="/employee-table" element={<Layout><EmployeeTable /></Layout>} />
+          <Route path="/admin" element={<Layout><AdminPanel /></Layout>} />
+          <Route path="/admin/salary-management" element={<Layout><SalaryManagement /></Layout>} />
+          <Route path="/admin/salary-processing" element={<Layout><SalaryProcessing /></Layout>} />
+          <Route path="/admin/config" element={<Layout><ConfigManagement /></Layout>} />
+          <Route path="/admin/attendance" element={<Layout><ManagerDashboard /></Layout>} />
+          <Route path="/attendance/display" element={<Layout fullWidth><QRDisplay /></Layout>} />
+          <Route path="/attendance/checkin" element={<Layout><EmployeeCheckin /></Layout>} />
+          <Route path="/leave/apply" element={<Layout><LeaveApplication /></Layout>} />
+          <Route path="/leave/manage" element={<Layout><LeaveManagement /></Layout>} />
         </Routes>
       </div>
     </Router>

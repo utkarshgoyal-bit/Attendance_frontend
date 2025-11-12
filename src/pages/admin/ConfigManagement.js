@@ -31,10 +31,15 @@ const ConfigManagement = () => {
   };
 
   const handleSave = async () => {
+    // Validate times first
+    if (!validateTimes()) {
+      return;
+    }
+
     setSaving(true);
     try {
       await apiClient.put(`/config/${orgId}`, config);
-      showToast('✓ Configuration saved successfully!', 'success');
+      showToast('Configuration saved successfully!', 'success');
     } catch (error) {
       console.error('Error saving config:', error);
       showToast('Failed to save configuration', 'error');
@@ -67,6 +72,29 @@ const ConfigManagement = () => {
 
   const closeToast = () => {
     setToast(null);
+  };
+
+  // Validate time ordering
+  const validateTimes = () => {
+    const full = config.attendanceTiming.fullDayBefore.split(':').map(Number);
+    const late = config.attendanceTiming.lateBefore.split(':').map(Number);
+    const half = config.attendanceTiming.halfDayBefore.split(':').map(Number);
+
+    const fullMins = full[0] * 60 + full[1];
+    const lateMins = late[0] * 60 + late[1];
+    const halfMins = half[0] * 60 + half[1];
+
+    if (fullMins >= lateMins) {
+      showToast('Late time must be after Full Day time', 'error');
+      return false;
+    }
+
+    if (lateMins >= halfMins) {
+      showToast('Half Day time must be after Late time', 'error');
+      return false;
+    }
+
+    return true;
   };
 
   if (loading && !config) {
@@ -166,6 +194,51 @@ const ConfigManagement = () => {
                 />
                 <p className="text-xs text-gray-500 mt-1">Between Late and this time = Half Day</p>
               </div>
+            </div>
+
+            {/* Visual Example */}
+            <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+              <p className="text-sm font-semibold text-blue-900 mb-3 flex items-center gap-2">
+                <span>📊</span>
+                Current Attendance Rules
+              </p>
+              <div className="space-y-2">
+                <div className="flex items-center gap-3 text-sm">
+                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                  <span className="text-gray-700">Before <span className="font-bold text-green-700">{config.attendanceTiming.fullDayBefore}</span></span>
+                  <span className="ml-auto px-3 py-1 bg-green-100 text-green-800 rounded-full font-semibold text-xs">
+                    FULL DAY
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 text-sm">
+                  <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+                  <span className="text-gray-700"><span className="font-bold text-yellow-700">{config.attendanceTiming.fullDayBefore}</span> - <span className="font-bold text-yellow-700">{config.attendanceTiming.lateBefore}</span></span>
+                  <span className="ml-auto px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full font-semibold text-xs">
+                    LATE
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 text-sm">
+                  <div className="w-2 h-2 rounded-full bg-orange-500"></div>
+                  <span className="text-gray-700"><span className="font-bold text-orange-700">{config.attendanceTiming.lateBefore}</span> - <span className="font-bold text-orange-700">{config.attendanceTiming.halfDayBefore}</span></span>
+                  <span className="ml-auto px-3 py-1 bg-orange-100 text-orange-800 rounded-full font-semibold text-xs">
+                    HALF DAY
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 text-sm">
+                  <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                  <span className="text-gray-700">After <span className="font-bold text-red-700">{config.attendanceTiming.halfDayBefore}</span></span>
+                  <span className="ml-auto px-3 py-1 bg-red-100 text-red-800 rounded-full font-semibold text-xs">
+                    ABSENT
+                  </span>
+                </div>
+              </div>
+              {config.gracePeriod.enabled && (
+                <div className="mt-3 pt-3 border-t border-blue-200">
+                  <p className="text-xs text-blue-700">
+                    ℹ️ Grace period: <span className="font-semibold">{config.gracePeriod.minutes} minutes</span> added to all cutoff times
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
