@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Sidebar from './Sidebar';
-import { ChevronLeft, Users, DollarSign, Clock, FileText, ClipboardCheck } from 'lucide-react';
+import { ChevronLeft, Users, DollarSign, Clock, FileText, ClipboardCheck, Calendar, Settings, LogOut } from 'lucide-react';
 import { fetchEmployees } from '../../services/employeeTableApi';
 import { fetchSalaryConfig } from '../../services/salaryConfigApi';
+import { useAuth } from '../../context/AuthContext';
+import RoleGuard from '../../components/RoleGuard';
 
 const AdminPanel = () => {
+  const { user, isHRAdmin, isSuperAdmin, isManager } = useAuth();
   const [employees, setEmployees] = useState([]);
   const [salaryConfig, setSalaryConfig] = useState(null);
   const [currentMonth, setCurrentMonth] = useState('October');
@@ -52,16 +55,33 @@ const AdminPanel = () => {
     <div className="min-h-screen bg-gray-100 flex">
       <Sidebar />
       <div className="flex-1 transition-all duration-300 ease-in-out">
-        <div className="bg-white h-20 flex items-center justify-start px-6 m-4 rounded-lg shadow-lg">
-          <Link
-            to="/home"
-            className="bg-gray-300 text-black py-2 px-2 rounded-full shadow-lg transform transition hover:scale-105 flex items-center gap-2 mr-4"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </Link>
-          <h1 className="text-4xl font-bold text-black">
-            Admin Dashboard
-          </h1>
+        <div className="bg-white h-20 flex items-center justify-between px-6 m-4 rounded-lg shadow-lg">
+          <div className="flex items-center">
+            <Link
+              to="/home"
+              className="bg-gray-300 text-black py-2 px-2 rounded-full shadow-lg transform transition hover:scale-105 flex items-center gap-2 mr-4"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </Link>
+            <h1 className="text-4xl font-bold text-black">
+              Admin Dashboard
+            </h1>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <p className="text-sm font-medium text-gray-900">{user?.name}</p>
+              <p className="text-xs text-gray-600">
+                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                  user?.role === 'SUPER_ADMIN' ? 'bg-purple-100 text-purple-800' :
+                  user?.role === 'HR_ADMIN' ? 'bg-blue-100 text-blue-800' :
+                  user?.role === 'MANAGER' ? 'bg-green-100 text-green-800' :
+                  'bg-gray-100 text-gray-800'
+                }`}>
+                  {user?.role?.replace('_', ' ')}
+                </span>
+              </p>
+            </div>
+          </div>
         </div>
 
         <div className="container mx-auto px-4 py-8 mt-10">
@@ -142,36 +162,113 @@ const AdminPanel = () => {
           <div className="bg-white rounded-lg shadow-lg p-6">
             <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Available to all authenticated users */}
               <Link
-                to="/employee-table"
-                className="flex items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+                to="/attendance/checkin"
+                className="flex items-center p-4 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors"
               >
-                <Users className="w-6 h-6 text-blue-600 mr-3" />
+                <ClipboardCheck className="w-6 h-6 text-indigo-600 mr-3" />
                 <div>
-                  <p className="font-medium text-gray-900">Manage Employee Salaries</p>
-                  <p className="text-sm text-gray-600">View and edit employee salary details</p>
+                  <p className="font-medium text-gray-900">Check-In</p>
+                  <p className="text-sm text-gray-600">Mark your attendance</p>
                 </div>
               </Link>
+
+              {/* Available to all authenticated users */}
               <Link
-                to="/admin/salary-management"
-                className="flex items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
+                to="/leave/apply"
+                className="flex items-center p-4 bg-teal-50 rounded-lg hover:bg-teal-100 transition-colors"
               >
-                <DollarSign className="w-6 h-6 text-green-600 mr-3" />
+                <Calendar className="w-6 h-6 text-teal-600 mr-3" />
                 <div>
-                  <p className="font-medium text-gray-900">Salary Management Settings</p>
-                  <p className="text-sm text-gray-600">Configure PF, ESI, and other deductions</p>
+                  <p className="font-medium text-gray-900">Apply for Leave</p>
+                  <p className="text-sm text-gray-600">Submit leave application</p>
                 </div>
               </Link>
-              <Link
-                to="/admin/attendance"
-                className="flex items-center p-4 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors"
-              >
-                <ClipboardCheck className="w-6 h-6 text-orange-600 mr-3" />
-                <div>
-                  <p className="font-medium text-gray-900">Attendance Management</p>
-                  <p className="text-sm text-gray-600">Approve/reject employee attendance</p>
-                </div>
-              </Link>
+
+              {/* Manager and above */}
+              <RoleGuard roles={['MANAGER', 'HR_ADMIN', 'SUPER_ADMIN']}>
+                <Link
+                  to="/admin/attendance"
+                  className="flex items-center p-4 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors"
+                >
+                  <ClipboardCheck className="w-6 h-6 text-orange-600 mr-3" />
+                  <div>
+                    <p className="font-medium text-gray-900">Attendance Approval</p>
+                    <p className="text-sm text-gray-600">Approve/reject employee attendance</p>
+                  </div>
+                </Link>
+              </RoleGuard>
+
+              {/* Manager and above */}
+              <RoleGuard roles={['MANAGER', 'HR_ADMIN', 'SUPER_ADMIN']}>
+                <Link
+                  to="/leave/manage"
+                  className="flex items-center p-4 bg-cyan-50 rounded-lg hover:bg-cyan-100 transition-colors"
+                >
+                  <Calendar className="w-6 h-6 text-cyan-600 mr-3" />
+                  <div>
+                    <p className="font-medium text-gray-900">Leave Management</p>
+                    <p className="text-sm text-gray-600">Approve/reject leave applications</p>
+                  </div>
+                </Link>
+              </RoleGuard>
+
+              {/* HR Admin and Super Admin only */}
+              <RoleGuard roles={['HR_ADMIN', 'SUPER_ADMIN']}>
+                <Link
+                  to="/employee-table"
+                  className="flex items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+                >
+                  <Users className="w-6 h-6 text-blue-600 mr-3" />
+                  <div>
+                    <p className="font-medium text-gray-900">Manage Employee Salaries</p>
+                    <p className="text-sm text-gray-600">View and edit employee salary details</p>
+                  </div>
+                </Link>
+              </RoleGuard>
+
+              {/* HR Admin and Super Admin only */}
+              <RoleGuard roles={['HR_ADMIN', 'SUPER_ADMIN']}>
+                <Link
+                  to="/admin/salary-management"
+                  className="flex items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
+                >
+                  <DollarSign className="w-6 h-6 text-green-600 mr-3" />
+                  <div>
+                    <p className="font-medium text-gray-900">Salary Configuration</p>
+                    <p className="text-sm text-gray-600">Configure PF, ESI, and deductions</p>
+                  </div>
+                </Link>
+              </RoleGuard>
+
+              {/* HR Admin and Super Admin only */}
+              <RoleGuard roles={['HR_ADMIN', 'SUPER_ADMIN']}>
+                <Link
+                  to="/admin/salary-processing"
+                  className="flex items-center p-4 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors"
+                >
+                  <DollarSign className="w-6 h-6 text-emerald-600 mr-3" />
+                  <div>
+                    <p className="font-medium text-gray-900">Process Salaries</p>
+                    <p className="text-sm text-gray-600">Calculate monthly salaries</p>
+                  </div>
+                </Link>
+              </RoleGuard>
+
+              {/* Super Admin only */}
+              <RoleGuard roles={['SUPER_ADMIN']}>
+                <Link
+                  to="/admin/config"
+                  className="flex items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
+                >
+                  <Settings className="w-6 h-6 text-purple-600 mr-3" />
+                  <div>
+                    <p className="font-medium text-gray-900">Organization Settings</p>
+                    <p className="text-sm text-gray-600">Configure attendance and leave policies</p>
+                  </div>
+                </Link>
+              </RoleGuard>
             </div>
           </div>
         </div>
