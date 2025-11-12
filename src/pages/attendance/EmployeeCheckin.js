@@ -11,6 +11,7 @@ const EmployeeCheckin = () => {
   const [loading, setLoading] = useState(false);
   const [autoStatus, setAutoStatus] = useState('');
   const [toast, setToast] = useState(null);
+  const [config, setConfig] = useState(null);
 
   // Toast helper functions
   const showToast = (message, type = 'success') => {
@@ -21,10 +22,31 @@ const EmployeeCheckin = () => {
     setToast(null);
   };
 
-  // On mount: Get QR data from URL
+  // Fetch organization config
+  const fetchConfig = async () => {
+    try {
+      const orgId = "673db4bb4ea85b50f50f20d4"; // TODO: Get from context
+      const response = await apiClient.get(`/config/${orgId}`);
+      setConfig(response.data.config);
+    } catch (error) {
+      console.error('Error fetching config:', error);
+      // Use defaults if config fetch fails
+      setConfig({
+        attendanceTiming: {
+          fullDayBefore: "10:00",
+          lateBefore: "11:00",
+          halfDayBefore: "14:00"
+        }
+      });
+    }
+  };
+
+  // On mount: Get QR data from URL and fetch config
   useEffect(() => {
+    fetchConfig();
+
     const qrParam = searchParams.get('qr');
-    
+
     if (qrParam) {
       try {
         const decoded = decodeURIComponent(qrParam);
@@ -38,23 +60,50 @@ const EmployeeCheckin = () => {
     } else {
       setStatus({ type: 'error', message: 'No QR code detected. Please scan QR code at entrance.' });
     }
-    
-    calculateAutoStatus();
   }, [searchParams]);
 
+  // Calculate auto status when config is loaded and refresh every minute
+  useEffect(() => {
+    if (config) {
+      calculateAutoStatus();
+
+      // Refresh status every minute
+      const interval = setInterval(() => {
+        calculateAutoStatus();
+      }, 60000); // 60 seconds
+
+      return () => clearInterval(interval);
+    }
+  }, [config]);
+
   const calculateAutoStatus = () => {
+    if (!config) return;
+
     const now = new Date();
     const hour = now.getHours();
     const minute = now.getMinutes();
     const timeInMinutes = hour * 60 + minute;
-    
-    if (timeInMinutes < 10 * 60) { // Before 10:00 AM
+
+    // Parse config times
+    const [fullHour, fullMin] = config.attendanceTiming.fullDayBefore.split(':').map(Number);
+    const [lateHour, lateMin] = config.attendanceTiming.lateBefore.split(':').map(Number);
+    const [halfHour, halfMin] = config.attendanceTiming.halfDayBefore.split(':').map(Number);
+
+    const fullDayMinutes = fullHour * 60 + fullMin;
+    const lateMinutes = lateHour * 60 + lateMin;
+    const halfDayMinutes = halfHour * 60 + halfMin;
+
+    // Apply grace period if enabled
+    const graceMinutes = config.gracePeriod?.enabled ? config.gracePeriod.minutes : 0;
+    const effectiveFullDayMinutes = fullDayMinutes + graceMinutes;
+
+    if (timeInMinutes < effectiveFullDayMinutes) {
       setAutoStatus('ON TIME ✓');
-    } else if (timeInMinutes < 11 * 60) { // 10:00-11:00 AM
+    } else if (timeInMinutes < lateMinutes) {
       setAutoStatus('LATE ⚠️');
-    } else if (timeInMinutes < 14 * 60) { // 11:00-2:00 PM
+    } else if (timeInMinutes < halfDayMinutes) {
       setAutoStatus('HALF DAY ⚠️');
-    } else { // After 2:00 PM
+    } else {
       setAutoStatus('ABSENT ✗');
     }
   };

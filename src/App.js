@@ -5,6 +5,7 @@ import EmployeeTable from './pages/EmployeeTable';
 import Login from './pages/login';
 import AdminPanel from './pages/admin/AdminPanel';
 import SalaryManagement from './pages/admin/SalaryManagement';
+import ConfigManagement from './pages/admin/ConfigManagement';
 import ManagerDashboard from './pages/attendance/ManagerDashboard';
 import QRDisplay from './pages/attendance/QRDisplay';
 import EmployeeCheckin from './pages/attendance/EmployeeCheckin';
@@ -20,6 +21,7 @@ function App() {
           <Route path="/employee-table" element={<EmployeeTable />} />
           <Route path="/admin" element={<AdminPanel />} />
           <Route path="/admin/salary-management" element={<SalaryManagement />} />
+          <Route path="/admin/config" element={<ConfigManagement />} />
           <Route path="/admin/attendance" element={<ManagerDashboard />} />
           <Route path="/attendance/display" element={<QRDisplay />} />
           <Route path="/attendance/checkin" element={<EmployeeCheckin />} />
