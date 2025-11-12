@@ -1,4 +1,4 @@
-import { CircleDollarSign, Settings } from 'lucide-react';
+import { CircleDollarSign, Settings, DollarSign } from 'lucide-react';
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -21,6 +21,19 @@ const Sidebar = () => {
 
           <span className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
             Salary Management
+          </span>
+        </Link>
+
+        <Link
+          to="/admin/salary-processing"
+          className="flex items-center w-full px-3 py-3 hover:bg-gray-200 transition-all duration-200"
+        >
+          <div className="flex justify-center w-14">
+            <DollarSign className="w-6 h-6 flex-shrink-0" />
+          </div>
+
+          <span className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+            Process Salaries
           </span>
         </Link>
 
