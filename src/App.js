@@ -10,6 +10,8 @@ import ConfigManagement from './pages/admin/ConfigManagement';
 import ManagerDashboard from './pages/attendance/ManagerDashboard';
 import QRDisplay from './pages/attendance/QRDisplay';
 import EmployeeCheckin from './pages/attendance/EmployeeCheckin';
+import LeaveApplication from './pages/leave/LeaveApplication';
+import LeaveManagement from './pages/leave/LeaveManagement';
 
 function App() {
   return (
@@ -27,6 +29,8 @@ function App() {
           <Route path="/admin/attendance" element={<ManagerDashboard />} />
           <Route path="/attendance/display" element={<QRDisplay />} />
           <Route path="/attendance/checkin" element={<EmployeeCheckin />} />
+          <Route path="/leave/apply" element={<LeaveApplication />} />
+          <Route path="/leave/manage" element={<LeaveManagement />} />
         </Routes>
       </div>
     </Router>
