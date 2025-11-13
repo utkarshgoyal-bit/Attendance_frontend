@@ -14,8 +14,7 @@ pids
 *.pid.lock
 
 # Dependency directories
-node_modules/
-jspm_packages/
+node_modules
 
 # Optional npm cache directory
 .npm
@@ -45,20 +44,12 @@ out
 .env.development.local
 .env.test.local
 .env.production.local
-*.local
 
 # TypeScript build info
 *.tsbuildinfo
-tsconfig.app.tsbuildinfo
-
-# Lock files (optional - uncomment if you want to ignore)
-# package-lock.json
-# yarn.lock
-# pnpm-lock.yaml
 
 # Editor directories and files
-.vscode/*
-!.vscode/extensions.json
+.vscode
 .idea
 *.suo
 *.ntvs*
@@ -69,3 +60,6 @@ tsconfig.app.tsbuildinfo
 # OS-specific files
 .DS_Store
 Thumbs.db
+
+# Coverage reports
+coverage

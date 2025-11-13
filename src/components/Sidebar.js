@@ -10,7 +10,9 @@ import {
   Settings,
   Monitor,
   LogOut,
-  UserCircle
+  UserCircle,
+  UserPlus,
+  LayoutDashboard
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -36,6 +38,9 @@ const Sidebar = () => {
       section: 'Self Service',
       roles: ['EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN'],
       items: [
+        { path: '/dashboard/employee', label: 'Dashboard', icon: LayoutDashboard, roles: ['EMPLOYEE'] },
+        { path: '/dashboard/manager', label: 'Dashboard', icon: LayoutDashboard, roles: ['MANAGER'] },
+        { path: '/dashboard/hr', label: 'Dashboard', icon: LayoutDashboard, roles: ['HR_ADMIN', 'SUPER_ADMIN'] },
         { path: '/home', label: 'Home', icon: Home, roles: ['EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN'] },
         { path: '/attendance/checkin', label: 'Check In', icon: ClipboardCheck, roles: ['EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN'] },
         { path: '/leave/apply', label: 'Apply Leave', icon: Calendar, roles: ['EMPLOYEE', 'MANAGER', 'HR_ADMIN', 'SUPER_ADMIN'] },
@@ -58,6 +63,7 @@ const Sidebar = () => {
       roles: ['HR_ADMIN', 'SUPER_ADMIN'],
       items: [
         { path: '/employees', label: 'Employees', icon: Users, roles: ['HR_ADMIN', 'SUPER_ADMIN'] },
+        { path: '/employees/add', label: 'Add Employee', icon: UserPlus, roles: ['HR_ADMIN', 'SUPER_ADMIN'] },
         { path: '/admin/salary-management', label: 'Salary Config', icon: DollarSign, roles: ['HR_ADMIN', 'SUPER_ADMIN'] },
         { path: '/admin/salary-processing', label: 'Process Salaries', icon: DollarSign, roles: ['HR_ADMIN', 'SUPER_ADMIN'] },
       ]
