@@ -17,6 +17,7 @@ const EmployeeTable = () => {
   const [sortBy, setSortBy] = useState(null);
   const [sortOrder, setSortOrder] = useState("asc");
   const [salaryConfig, setSalaryConfig] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const getDaysInMonth = (monthName, year) => {
     const monthIndex = [
@@ -52,6 +53,7 @@ const EmployeeTable = () => {
 
   const fetchEmployeesData = async () => {
     try {
+      setLoading(true);
       // Create cache key based on filters
       const cacheKey = `employees-${selectedMonth}-${selectedYear}-${selectedBranch}-${debouncedSearch}`;
 
@@ -59,6 +61,7 @@ const EmployeeTable = () => {
       const cachedData = getCache(cacheKey);
       if (cachedData) {
         setEmployees(cachedData);
+        setLoading(false);
         return;
       }
 
@@ -76,6 +79,7 @@ const EmployeeTable = () => {
       if (!response || !response.employees || !Array.isArray(response.employees)) {
         console.error("Invalid data received: expected an object with employees array, got:", response);
         setEmployees([]);
+        setLoading(false);
         return;
       }
 
@@ -103,6 +107,9 @@ const EmployeeTable = () => {
       setEmployees(filtered);
     } catch (error) {
       console.error("Error fetching employees:", error);
+      setEmployees([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -281,7 +288,7 @@ const EmployeeTable = () => {
               <div className="flex flex-wrap text-sm gap-4 items-center">
                 <input
                   type="text"
-                  placeholder="Search by name..."
+                  placeholder="🔍 Search by name, ID, email..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -360,74 +367,97 @@ const EmployeeTable = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredAndSortedEmployees.map((employee, index) => (
-                  <tr
-                    key={employee.employeeId}
-                    className="hover:bg-gray-50 transition-colors duration-200"
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                      {index + 1}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {employee.name}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      ₹{employee.base.toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      ₹{employee.hra.toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      ₹{employee.conveyance.toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {editing === index ? (
-                        <div className="flex items-center space-x-2">
-                          <input
-                            type="number"
-                            value={employee.attendanceDays}
-                            onChange={(e) =>
-                              updateEmployee(
-                                index,
-                                "attendanceDays",
-                                e.target.value
-                              )
-                            }
-                            className="w-16 px-2 py-1 border rounded"
-                            min="0"
-                            max={employee.totalDays}
-                          />
-                          <span>/ {employee.totalDays}</span>
-                        </div>
-                      ) : (
-                        `${employee.attendanceDays}/${employee.totalDays}`
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600">
-                      ₹{(employee.netPayable !== null ? employee.netPayable : calculateNetPayable(employee, salaryConfig)).toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-blue-600">
-                      ₹{(employee.ctc !== null ? employee.ctc : calculateCTC(employee, salaryConfig)).toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {editing === index ? (
-                        <button
-                          onClick={() => handleSave(index)}
-                          className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
-                        >
-                          Save
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => handleEdit(index)}
-                          className="px-3 py-1 bg-blue-950 text-white rounded hover:bg-blue-900"
-                        >
-                          {employee.netPayable === null ? "Add Attendance" : "Edit"}
-                        </button>
-                      )}
+                {loading ? (
+                  <tr>
+                    <td colSpan="9" className="px-6 py-12 text-center">
+                      <div className="flex flex-col items-center justify-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+                        <p className="text-gray-600">Loading employees...</p>
+                      </div>
                     </td>
                   </tr>
-                ))}
+                ) : filteredAndSortedEmployees.length === 0 ? (
+                  <tr>
+                    <td colSpan="9" className="px-6 py-12 text-center">
+                      <div className="text-center">
+                        <p className="text-6xl mb-4">👥</p>
+                        <p className="text-xl font-semibold text-gray-700 mb-2">No employees found</p>
+                        <p className="text-gray-500">
+                          {searchTerm ? `No results for "${searchTerm}"` : 'No employees available'}
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredAndSortedEmployees.map((employee, index) => (
+                    <tr
+                      key={employee.employeeId}
+                      className="hover:bg-gray-50 transition-colors duration-200"
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                        {index + 1}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {employee.name}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ₹{employee.base.toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ₹{employee.hra.toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ₹{employee.conveyance.toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {editing === index ? (
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="number"
+                              value={employee.attendanceDays}
+                              onChange={(e) =>
+                                updateEmployee(
+                                  index,
+                                  "attendanceDays",
+                                  e.target.value
+                                )
+                              }
+                              className="w-16 px-2 py-1 border rounded"
+                              min="0"
+                              max={employee.totalDays}
+                            />
+                            <span>/ {employee.totalDays}</span>
+                          </div>
+                        ) : (
+                          `${employee.attendanceDays}/${employee.totalDays}`
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600">
+                        ₹{(employee.netPayable !== null ? employee.netPayable : calculateNetPayable(employee, salaryConfig)).toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-blue-600">
+                        ₹{(employee.ctc !== null ? employee.ctc : calculateCTC(employee, salaryConfig)).toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {editing === index ? (
+                          <button
+                            onClick={() => handleSave(index)}
+                            className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+                          >
+                            Save
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleEdit(index)}
+                            className="px-3 py-1 bg-blue-950 text-white rounded hover:bg-blue-900"
+                          >
+                            {employee.netPayable === null ? "Add Attendance" : "Edit"}
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
