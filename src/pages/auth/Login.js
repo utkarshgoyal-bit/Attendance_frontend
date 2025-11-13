@@ -21,46 +21,44 @@ const Login = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
+  e.preventDefault();
+  setLoading(true);
+  setError('');
 
-    try {
-      console.log('🔐 Attempting login...');
-      
-      const response = await axios.post('http://localhost:5000/api/auth/login', {
-        email: formData.email,
-        password: formData.password
-      });
+  try {
+    console.log('🔐 Attempting login...');
+    
+    const response = await axios.post('http://localhost:5000/api/auth/login', {
+      email: formData.email,
+      password: formData.password
+    });
 
-      console.log('✅ Login successful!', response.data);
+    console.log('✅ Login successful!', response.data);
 
-      // Save token and user info
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
+    // Save token and user info
+    localStorage.setItem('token', response.data.token);
+    localStorage.setItem('user', JSON.stringify(response.data.user));
 
-      // Show success message
-      alert(`Welcome ${response.data.user.firstName}!`);
+    // Show success message
+    alert(`Welcome ${response.data.user.firstName}!`);
 
-      // Redirect to home
-      navigate('/home');
-    } catch (error) {
-      console.error('❌ Login failed:', error);
-      
-      if (error.response) {
-        // Server responded with error
-        setError(error.response.data.message || 'Invalid credentials');
-      } else if (error.request) {
-        // Request made but no response
-        setError('Cannot connect to server. Make sure backend is running.');
-      } else {
-        // Something else happened
-        setError('An error occurred. Please try again.');
-      }
-    } finally {
-      setLoading(false);
+    // Force redirect using window.location
+    window.location.href = '/home';
+    
+  } catch (error) {
+    console.error('❌ Login failed:', error);
+    
+    if (error.response) {
+      setError(error.response.data.message || 'Invalid credentials');
+    } else if (error.request) {
+      setError('Cannot connect to server. Make sure backend is running.');
+    } else {
+      setError('An error occurred. Please try again.');
     }
-  };
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
