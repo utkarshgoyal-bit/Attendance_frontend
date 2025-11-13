@@ -1,50 +1,64 @@
 import axios from 'axios';
 
-/**
- * Centralized API client with JWT authentication
- * Base URL: http://localhost:5000/api
- * Timeout: 10 seconds
- * Credentials: Included (for cookies)
- */
-
 const apiClient = axios.create({
   baseURL: 'http://localhost:5000/api',
-  timeout: 10000, // 10 seconds
-  withCredentials: true, // Enable cookies
   headers: {
-    'Content-Type': 'application/json',
-  },
+    'Content-Type': 'application/json'
+  }
 });
 
-/**
- * Request Interceptor
- * - Logs all outgoing requests
- * - Authentication now handled via cookies (JWT)
- */
+// Request interceptor - Add token to all requests
 apiClient.interceptors.request.use(
   (config) => {
-    console.log(`Making ${config.method.toUpperCase()} request to ${config.url}`);
-    // Cookies are automatically sent with withCredentials: true
+    const token = localStorage.getItem('token');
+    
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    
+    // Log for debugging
+    console.log('🔐 API Request:', config.method.toUpperCase(), config.url);
+    if (token) {
+      console.log('   ✅ Token attached');
+    } else {
+      console.log('   ⚠️  No token found');
+    }
+    
     return config;
   },
   (error) => {
-    console.error('Request Error:', error);
+    console.error('❌ Request error:', error);
     return Promise.reject(error);
   }
 );
 
-/**
- * Response Interceptor
- * Handles errors centrally
- */
+// Response interceptor - Handle auth errors
 apiClient.interceptors.response.use(
   (response) => {
+    console.log('✅ API Response:', response.status, response.config.url);
     return response;
   },
   (error) => {
-    const { method, url } = error.config || {};
-    const message = error.response?.data?.message || error.message;
-    console.error(`API Error: ${method?.toUpperCase()} ${url} - ${message}`);
+    console.error('❌ API Error:', error.response?.status, error.config?.url);
+    
+    // Handle 401 Unauthorized
+    if (error.response?.status === 401) {
+      console.log('🔒 Unauthorized - Redirecting to login...');
+      
+      // Clear invalid token
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      
+      // Redirect to login
+      window.location.href = '/login';
+    }
+    
+    // Handle 403 Forbidden
+    if (error.response?.status === 403) {
+      console.log('🚫 Forbidden - Insufficient permissions');
+      alert('You do not have permission to perform this action.');
+    }
+    
     return Promise.reject(error);
   }
 );
