@@ -1,12 +1,22 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+
+// Auth
 import Login from './pages/auth/Login';
+
+// Main Pages
 import Home from './pages/Home';
-import EmployeeTable from './pages/employees/EmployeeTable';
-import AddEmployee from './pages/employees/AddEmployee';
+import EmployeeTable from './pages/EmployeeTable';
+
+// Admin Pages
 import AdminPanel from './pages/admin/AdminPanel';
 import SalaryManagement from './pages/admin/SalaryManagement';
 import BranchManagement from './pages/admin/BranchManagement';
+
+// Employee Pages
+import AddEmployee from './pages/employees/AddEmployee';
+
+// Attendance Pages
 import QRDisplay from './pages/attendance/QRDisplay';
 import EmployeeCheckin from './pages/attendance/EmployeeCheckin';
 import ManagerDashboard from './pages/attendance/ManagerDashboard';
@@ -27,7 +37,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Public Routes */}
+        {/* Public Route - Login */}
         <Route path="/login" element={<Login />} />
         
         {/* Redirect root to login */}
@@ -45,6 +55,15 @@ function App() {
         
         <Route
           path="/employee-table"
+          element={
+            <ProtectedRoute>
+              <EmployeeTable />
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route
+          path="/employees"
           element={
             <ProtectedRoute>
               <EmployeeTable />
@@ -115,7 +134,7 @@ function App() {
           }
         />
         
-        {/* 404 - Not Found */}
+        {/* 404 - Redirect to login */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </Router>
