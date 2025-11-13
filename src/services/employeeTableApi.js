@@ -1,6 +1,4 @@
-import axios from "axios";
-
-const API_BASE_URL = "http://localhost:5000/api";
+import apiClient from './apiClient';
 
 export const fetchEmployees = async (selectedMonth, selectedYear, selectedBranch, debouncedSearch) => {
   try {
@@ -10,7 +8,8 @@ export const fetchEmployees = async (selectedMonth, selectedYear, selectedBranch
       branch: selectedBranch,
       search: debouncedSearch,
     });
-    const response = await axios.get(`${API_BASE_URL}/employees?${params.toString()}`);
+    
+    const response = await apiClient.get(`/employees?${params.toString()}`);
     console.log("Fetched employees:", response.data);
     return response.data;
   } catch (error) {
@@ -21,7 +20,7 @@ export const fetchEmployees = async (selectedMonth, selectedYear, selectedBranch
 
 export const saveSalary = async (payload) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/salaries`, payload);
+    const response = await apiClient.post('/salaries', payload);
     return response.data;
   } catch (error) {
     console.error("Error saving salary:", error);
@@ -31,12 +30,10 @@ export const saveSalary = async (payload) => {
 
 export const updateSalary = async (id, payload) => {
   try {
-    const response = await axios.put(`${API_BASE_URL}/salaries/${id}`, payload);
+    const response = await apiClient.put(`/salaries/${id}`, payload);
     return response.data;
   } catch (error) {
     console.error("Error updating salary:", error);
     throw error;
   }
 };
-
-
