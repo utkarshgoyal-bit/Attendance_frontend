@@ -1,5 +1,5 @@
 import './App.css';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './pages/Home';
 import EmployeeTable from './pages/EmployeeTable';
 import Login from './pages/login';
@@ -19,32 +19,38 @@ import ManagerDashboardNew from './pages/dashboards/ManagerDashboard';
 import HRDashboard from './pages/dashboards/HRDashboard';
 import Layout from './components/Layout';
 
+// Protected Route Component
+const ProtectedRoute = ({ children }) => {
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
+  return user ? children : <Navigate to="/" />;
+};
+
 function App() {
   return (
     <Router>
       <div className="App">
         <Routes>
-          {/* Public routes - no sidebar */}
-          <Route path="/" element={<Layout fullWidth><Login /></Layout>} />
+          {/* Public routes */}
+          <Route path="/" element={<Login />} />
 
-          {/* Authenticated routes - with sidebar */}
-          <Route path="/home" element={<Layout><Home /></Layout>} />
-          <Route path="/dashboard/employee" element={<Layout><EmployeeDashboard /></Layout>} />
-          <Route path="/dashboard/manager" element={<Layout><ManagerDashboardNew /></Layout>} />
-          <Route path="/dashboard/hr" element={<Layout><HRDashboard /></Layout>} />
-          <Route path="/employees" element={<Layout><EmployeeTable /></Layout>} />
-          <Route path="/employees/add" element={<Layout><AddEmployee /></Layout>} />
-          <Route path="/employee-table" element={<Layout><EmployeeTable /></Layout>} />
-          <Route path="/admin" element={<Layout><AdminPanel /></Layout>} />
-          <Route path="/admin/salary-management" element={<Layout><SalaryManagement /></Layout>} />
-          <Route path="/admin/salary-processing" element={<Layout><SalaryProcessing /></Layout>} />
-          <Route path="/admin/config" element={<Layout><ConfigManagement /></Layout>} />
-          <Route path="/admin/branches" element={<Layout><BranchManagement /></Layout>} />
-          <Route path="/admin/attendance" element={<Layout><ManagerDashboard /></Layout>} />
-          <Route path="/attendance/display" element={<Layout fullWidth><QRDisplay /></Layout>} />
-          <Route path="/attendance/checkin" element={<Layout><EmployeeCheckin /></Layout>} />
-          <Route path="/leave/apply" element={<Layout><LeaveApplication /></Layout>} />
-          <Route path="/leave/manage" element={<Layout><LeaveManagement /></Layout>} />
+          {/* Protected routes - with sidebar */}
+          <Route path="/home" element={<ProtectedRoute><Layout><Home /></Layout></ProtectedRoute>} />
+          <Route path="/dashboard/employee" element={<ProtectedRoute><Layout><EmployeeDashboard /></Layout></ProtectedRoute>} />
+          <Route path="/dashboard/manager" element={<ProtectedRoute><Layout><ManagerDashboardNew /></Layout></ProtectedRoute>} />
+          <Route path="/dashboard/hr" element={<ProtectedRoute><Layout><HRDashboard /></Layout></ProtectedRoute>} />
+          <Route path="/employees" element={<ProtectedRoute><Layout><EmployeeTable /></Layout></ProtectedRoute>} />
+          <Route path="/employees/add" element={<ProtectedRoute><Layout><AddEmployee /></Layout></ProtectedRoute>} />
+          <Route path="/employee-table" element={<ProtectedRoute><Layout><EmployeeTable /></Layout></ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedRoute><Layout><AdminPanel /></Layout></ProtectedRoute>} />
+          <Route path="/admin/salary-management" element={<ProtectedRoute><Layout><SalaryManagement /></Layout></ProtectedRoute>} />
+          <Route path="/admin/salary-processing" element={<ProtectedRoute><Layout><SalaryProcessing /></Layout></ProtectedRoute>} />
+          <Route path="/admin/config" element={<ProtectedRoute><Layout><ConfigManagement /></Layout></ProtectedRoute>} />
+          <Route path="/admin/branches" element={<ProtectedRoute><Layout><BranchManagement /></Layout></ProtectedRoute>} />
+          <Route path="/admin/attendance" element={<ProtectedRoute><Layout><ManagerDashboard /></Layout></ProtectedRoute>} />
+          <Route path="/attendance/display" element={<ProtectedRoute><Layout fullWidth><QRDisplay /></Layout></ProtectedRoute>} />
+          <Route path="/attendance/checkin" element={<ProtectedRoute><Layout><EmployeeCheckin /></Layout></ProtectedRoute>} />
+          <Route path="/leave/apply" element={<ProtectedRoute><Layout><LeaveApplication /></Layout></ProtectedRoute>} />
+          <Route path="/leave/manage" element={<ProtectedRoute><Layout><LeaveManagement /></Layout></ProtectedRoute>} />
         </Routes>
       </div>
     </Router>

@@ -1,14 +1,16 @@
 import axios from 'axios';
 
 /**
- * Centralized API client with request/response interceptors
+ * Centralized API client with JWT authentication
  * Base URL: http://localhost:5000/api
  * Timeout: 10 seconds
+ * Credentials: Included (for cookies)
  */
 
 const apiClient = axios.create({
   baseURL: 'http://localhost:5000/api',
   timeout: 10000, // 10 seconds
+  withCredentials: true, // Enable cookies
   headers: {
     'Content-Type': 'application/json',
   },
@@ -17,29 +19,12 @@ const apiClient = axios.create({
 /**
  * Request Interceptor
  * - Logs all outgoing requests
- * - Adds authentication headers (role, user ID, employee ID)
+ * - Authentication now handled via cookies (JWT)
  */
 apiClient.interceptors.request.use(
   (config) => {
     console.log(`Making ${config.method.toUpperCase()} request to ${config.url}`);
-
-    // Add authentication headers from localStorage
-    const userRole = localStorage.getItem('userRole');
-    const userId = localStorage.getItem('userId');
-    const employeeId = localStorage.getItem('employeeId');
-
-    if (userRole) {
-      config.headers['x-user-role'] = userRole;
-    }
-
-    if (userId) {
-      config.headers['x-user-id'] = userId;
-    }
-
-    if (employeeId) {
-      config.headers['x-employee-id'] = employeeId;
-    }
-
+    // Cookies are automatically sent with withCredentials: true
     return config;
   },
   (error) => {
