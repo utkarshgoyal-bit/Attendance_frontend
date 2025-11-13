@@ -25,11 +25,17 @@ import ManagerDashboard from './pages/attendance/ManagerDashboard';
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
   
+  console.log('🔒 ProtectedRoute Check:', {
+    token: token ? 'EXISTS' : 'NULL',
+    tokenLength: token?.length || 0
+  });
+  
   if (!token) {
-    console.log('🔒 No token found - redirecting to login');
+    console.log('❌ No token - redirecting to login');
     return <Navigate to="/login" replace />;
   }
   
+  console.log('✅ Token found - allowing access');
   return children;
 };
 
