@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import apiClient from '../../services/apiClient';
 
 const AddEmployee = () => {
   const [step, setStep] = useState(1);
+  const [branches, setBranches] = useState([]);
   const [data, setData] = useState({
     firstName: '', lastName: '', email: '', phone: '',
     eId: '', branchId: '', department: '', designation: '',
@@ -10,6 +11,19 @@ const AddEmployee = () => {
     base: 0, hra: 0, conveyance: 1600,
     hasAccount: false, password: '', role: 'EMPLOYEE'
   });
+
+  useEffect(() => {
+    fetchBranches();
+  }, []);
+
+  const fetchBranches = async () => {
+    try {
+      const res = await apiClient.post('/branches', { orgId: '673db4bb4ea85b50f50f20d4' });
+      setBranches(res.data.branches || []);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const handleSubmit = async () => {
     try {
@@ -42,6 +56,24 @@ const AddEmployee = () => {
         <div className="bg-white p-6 rounded-lg shadow space-y-4">
           <h2 className="font-semibold">Employment</h2>
           <input placeholder="Employee ID (EMP001)" value={data.eId} onChange={(e) => setData({...data, eId: e.target.value})} className="border rounded px-3 py-2 w-full" />
+
+          <div>
+            <label className="block text-sm font-medium mb-2">Branch *</label>
+            <select
+              required
+              value={data.branchId}
+              onChange={(e) => setData({...data, branchId: e.target.value})}
+              className="w-full border rounded px-3 py-2"
+            >
+              <option value="">Select Branch</option>
+              {branches.map(branch => (
+                <option key={branch._id} value={branch._id}>
+                  {branch.name} ({branch.code})
+                </option>
+              ))}
+            </select>
+          </div>
+
           <input placeholder="Department" value={data.department} onChange={(e) => setData({...data, department: e.target.value})} className="border rounded px-3 py-2 w-full" />
           <input placeholder="Designation" value={data.designation} onChange={(e) => setData({...data, designation: e.target.value})} className="border rounded px-3 py-2 w-full" />
           <input type="date" value={data.joiningDate} onChange={(e) => setData({...data, joiningDate: e.target.value})} className="border rounded px-3 py-2 w-full" />

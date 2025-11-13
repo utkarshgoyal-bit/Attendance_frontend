@@ -12,7 +12,8 @@ import {
   LogOut,
   UserCircle,
   UserPlus,
-  LayoutDashboard
+  LayoutDashboard,
+  Building2
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -64,6 +65,7 @@ const Sidebar = () => {
       items: [
         { path: '/employees', label: 'Employees', icon: Users, roles: ['HR_ADMIN', 'SUPER_ADMIN'] },
         { path: '/employees/add', label: 'Add Employee', icon: UserPlus, roles: ['HR_ADMIN', 'SUPER_ADMIN'] },
+        { path: '/admin/branches', label: 'Branches', icon: Building2, roles: ['HR_ADMIN', 'SUPER_ADMIN'] },
         { path: '/admin/salary-management', label: 'Salary Config', icon: DollarSign, roles: ['HR_ADMIN', 'SUPER_ADMIN'] },
         { path: '/admin/salary-processing', label: 'Process Salaries', icon: DollarSign, roles: ['HR_ADMIN', 'SUPER_ADMIN'] },
       ]

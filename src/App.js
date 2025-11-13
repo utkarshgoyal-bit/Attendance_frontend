@@ -7,6 +7,7 @@ import AdminPanel from './pages/admin/AdminPanel';
 import SalaryManagement from './pages/admin/SalaryManagement';
 import SalaryProcessing from './pages/admin/SalaryProcessing';
 import ConfigManagement from './pages/admin/ConfigManagement';
+import BranchManagement from './pages/admin/BranchManagement';
 import ManagerDashboard from './pages/attendance/ManagerDashboard';
 import QRDisplay from './pages/attendance/QRDisplay';
 import EmployeeCheckin from './pages/attendance/EmployeeCheckin';
@@ -38,6 +39,7 @@ function App() {
           <Route path="/admin/salary-management" element={<Layout><SalaryManagement /></Layout>} />
           <Route path="/admin/salary-processing" element={<Layout><SalaryProcessing /></Layout>} />
           <Route path="/admin/config" element={<Layout><ConfigManagement /></Layout>} />
+          <Route path="/admin/branches" element={<Layout><BranchManagement /></Layout>} />
           <Route path="/admin/attendance" element={<Layout><ManagerDashboard /></Layout>} />
           <Route path="/attendance/display" element={<Layout fullWidth><QRDisplay /></Layout>} />
           <Route path="/attendance/checkin" element={<Layout><EmployeeCheckin /></Layout>} />
