@@ -7,7 +7,6 @@ const Login = () => {
   const navigate = useNavigate();
   const { login } = useContext(AuthContext);
 
-  // State
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -18,15 +17,26 @@ const Login = () => {
     setError('');
     setLoading(true);
 
-    const result = await login(email, password);
+    console.log('🔐 Login form submitted:', { email });
 
-    if (result.success) {
-      navigate('/home');
-    } else {
-      setError(result.error);
+    try {
+      const result = await login(email, password);
+      
+      console.log('📥 Login result:', result);
+
+      if (result.success) {
+        console.log('✅ Login successful, navigating to /home');
+        navigate('/home');
+      } else {
+        console.log('❌ Login failed:', result.error);
+        setError(result.error);
+      }
+    } catch (err) {
+      console.error('❌ Login exception:', err);
+      setError('An unexpected error occurred');
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (
@@ -129,7 +139,7 @@ const Login = () => {
           {/* Help Text */}
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
-              Default credentials: admin@company.com / admin123
+              Default credentials: <strong>admin@company.com</strong> / <strong>admin123</strong>
             </p>
           </div>
         </div>
