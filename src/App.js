@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
-
+import FloatingCalculator from './components/FloatingCalculator';
 // Auth
 import Login from './pages/auth/Login';
 
@@ -27,6 +27,7 @@ function App() {
   return (
     <AuthProvider>
       <Router>
+        <FloatingCalculator />
         <Routes>
           {/* Public Routes */}
           <Route path="/login" element={<Login />} />
@@ -43,6 +44,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+          
 
           <Route
             path="/employee-table"
@@ -174,6 +176,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+          
 
           <Route
             path="/admin/config"
