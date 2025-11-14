@@ -1,8 +1,10 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 
 // Auth
-import Login from './pages/auth/Login';
+import Login from './pages/auth/Login'; // Login page (in auth subfolder)
 
 // Main Pages
 import Home from './pages/Home';
@@ -21,33 +23,23 @@ import QRDisplay from './pages/attendance/QRDisplay';
 import EmployeeCheckin from './pages/attendance/EmployeeCheckin';
 import ManagerDashboard from './pages/attendance/ManagerDashboard';
 
-// Protected Route Component
-const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem('token');
-  
-  console.log('🔒 ProtectedRoute Check:', {
-    token: token ? 'EXISTS' : 'NULL',
-    tokenLength: token?.length || 0
-  });
-  
-  if (!token) {
-    console.log('❌ No token - redirecting to login');
-    return <Navigate to="/login" replace />;
-  }
-  
-  console.log('✅ Token found - allowing access');
-  return children;
-};
-
 function App() {
   return (
-    <Router>
+    <AuthProvider>
+      <Router>
       <Routes>
-        {/* Public Route - Login */}
+        {/* Public Route - Login (no protection) */}
         <Route path="/login" element={<Login />} />
-        
-        {/* Redirect root to login */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
+
+        {/* Root route - Redirect to home */}
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Navigate to="/home" replace />
+            </ProtectedRoute>
+          }
+        />
         
         {/* Protected Routes */}
         <Route
@@ -144,6 +136,7 @@ function App() {
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </Router>
+    </AuthProvider>
   );
 }
 

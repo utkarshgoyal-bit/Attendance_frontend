@@ -1,77 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { AuthContext } from '../../context/AuthContext';
 import { LogIn, Mail, Lock, AlertCircle } from 'lucide-react';
 
 const Login = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const { login } = useContext(AuthContext);
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-    setError(''); // Clear error when user types
-  };
+  // State
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
+    setLoading(true);
 
-    try {
-      console.log('🔐 Attempting login...');
-      
-      const response = await axios.post('http://localhost:5000/api/auth/login', {
-        email: formData.email,
-        password: formData.password
-      });
+    const result = await login(email, password);
 
-      console.log('✅ Login successful!', response.data);
-
-      // Save token and user info
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      
-      // ADD DEBUG LOGS
-      console.log('=== SAVED TO LOCALSTORAGE ===');
-      console.log('Token saved:', localStorage.getItem('token') ? 'YES' : 'NO');
-      console.log('Token value:', localStorage.getItem('token')?.substring(0, 50) + '...');
-      console.log('User saved:', localStorage.getItem('user') ? 'YES' : 'NO');
-      console.log('User value:', localStorage.getItem('user'));
-      console.log('==============================');
-
-      // Show success message
-      alert(`Welcome ${response.data.user.firstName}!`);
-
-      // Check again after alert
-      console.log('=== AFTER ALERT ===');
-      console.log('Token still there:', localStorage.getItem('token') ? 'YES' : 'NO');
-      console.log('===================');
-
-      // Force redirect using window.location
-      console.log('🔄 Redirecting to /home...');
-      window.location.href = '/home';
-      
-    } catch (error) {
-      console.error('❌ Login failed:', error);
-      
-      if (error.response) {
-        setError(error.response.data.message || 'Invalid credentials');
-      } else if (error.request) {
-        setError('Cannot connect to server. Make sure backend is running.');
-      } else {
-        setError('An error occurred. Please try again.');
-      }
-    } finally {
-      setLoading(false);
+    if (result.success) {
+      navigate('/home');
+    } else {
+      setError(result.error);
     }
+
+    setLoading(false);
   };
 
   return (
@@ -115,8 +70,8 @@ const Login = () => {
                   type="email"
                   name="email"
                   required
-                  value={formData.email}
-                  onChange={handleChange}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="admin@company.com"
                 />
@@ -136,8 +91,8 @@ const Login = () => {
                   type="password"
                   name="password"
                   required
-                  value={formData.password}
-                  onChange={handleChange}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="••••••••"
                 />

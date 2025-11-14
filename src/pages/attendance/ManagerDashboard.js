@@ -1,11 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
+import { AuthContext } from '../../context/AuthContext';
 import Sidebar from '../admin/Sidebar';
 import { ChevronLeft, CheckCircle, XCircle, Clock, User, Calendar, AlertCircle } from 'lucide-react';
 import { getTodayAttendance, approveAttendance, rejectAttendance } from '../../services/attendanceApi';
 import Toast from '../../components/Toast';
 
 const ManagerDashboard = () => {
+  const { user } = useContext(AuthContext);
+  const MANAGER_ID = user?.id;
+
+  // Null check for user
+  if (!user) {
+    return <div>Loading user data...</div>;
+  }
+
   const [attendanceRecords, setAttendanceRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('PENDING'); // PENDING, APPROVED, REJECTED, ALL
@@ -17,9 +26,6 @@ const ManagerDashboard = () => {
   const [lastRefreshTime, setLastRefreshTime] = useState(new Date()); // FEATURE 1: Auto-refresh tracking
   const [bulkApproving, setBulkApproving] = useState(false); // FEATURE 3: Bulk approve loading state
   const [toast, setToast] = useState(null); // Toast notification state
-
-  // Mock manager ID - In production, get from auth context/session
-  const MANAGER_ID = '671fb19cf66b19b6c3754321'; // Replace with actual logged-in user ID
 
   // ========== TOAST HELPERS ==========
   const showToast = (message, type = 'success') => {
