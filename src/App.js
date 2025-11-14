@@ -1,27 +1,29 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import FloatingCalculator from './components/FloatingCalculator';
-// Auth
+
+// Eager load (used immediately)
 import Login from './pages/auth/Login';
-
-// Main Pages
 import Home from './pages/Home';
-import EmployeeTable from './pages/EmployeeTable';
 
-// Admin Pages
-import AdminPanel from './pages/admin/AdminPanel';
-import SalaryManagement from './pages/admin/SalaryManagement';
-import BranchManagement from './pages/admin/BranchManagement';
+// Lazy load (loaded on demand)
+const AdminPanel = lazy(() => import('./pages/admin/AdminPanel'));
+const EmployeeTable = lazy(() => import('./pages/EmployeeTable'));
+const AddEmployee = lazy(() => import('./pages/employees/AddEmployee'));
+const BranchManagement = lazy(() => import('./pages/admin/BranchManagement'));
+const SalaryManagement = lazy(() => import('./pages/admin/SalaryManagement'));
+const ManagerDashboard = lazy(() => import('./pages/attendance/ManagerDashboard'));
+const QRDisplay = lazy(() => import('./pages/attendance/QRDisplay'));
+const EmployeeCheckin = lazy(() => import('./pages/attendance/EmployeeCheckin'));
 
-// Employee Pages
-import AddEmployee from './pages/employees/AddEmployee';
-
-// Attendance Pages
-import QRDisplay from './pages/attendance/QRDisplay';
-import EmployeeCheckin from './pages/attendance/EmployeeCheckin';
-import ManagerDashboard from './pages/attendance/ManagerDashboard';
+// Loading component
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="text-xl">Loading...</div>
+  </div>
+);
 
 function App() {
   return (
