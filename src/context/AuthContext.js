@@ -60,8 +60,31 @@ export const AuthProvider = ({ children }) => {
     window.location.href = '/login';
   };
 
+  // Check if user is authenticated
   const isAuthenticated = () => {
-    return !!user && !!getToken();
+    const token = getToken();
+    const currentUser = user || getUser();
+    
+    console.log('isAuthenticated check:', {
+      hasToken: !!token,
+      hasUser: !!currentUser,
+      user: currentUser
+    });
+    
+    return !!currentUser && !!token;
+  };
+
+  // Check if user has one of the required roles
+  const hasRole = (allowedRoles) => {
+    if (!user || !user.role) {
+      return false;
+    }
+    
+    // If allowedRoles is a string, convert to array
+    const rolesArray = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
+    
+    // Check if user's role is in the allowed roles
+    return rolesArray.includes(user.role);
   };
 
   const value = {
@@ -69,6 +92,7 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     isAuthenticated,
+    hasRole,
     loading
   };
 

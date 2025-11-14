@@ -8,7 +8,7 @@ import { useAuth } from '../../context/AuthContext';
 import RoleGuard from '../../components/RoleGuard';
 
 const AdminPanel = () => {
-  const { user, isHRAdmin, isSuperAdmin, isManager } = useAuth();
+  const { user, logout } = useAuth();
   const [employees, setEmployees] = useState([]);
   const [salaryConfig, setSalaryConfig] = useState(null);
   const [currentMonth, setCurrentMonth] = useState('October');
@@ -18,11 +18,10 @@ const AdminPanel = () => {
     const loadData = async () => {
       try {
         const [employeesResponse, configData] = await Promise.all([
-          fetchEmployees(), // This now returns paginated object
+          fetchEmployees(),
           fetchSalaryConfig()
         ]);
 
-        // Extract employees array from paginated response
         const employeesData = employeesResponse.employees || employeesResponse;
         setEmployees(employeesData);
         setSalaryConfig(configData);
@@ -48,13 +47,13 @@ const AdminPanel = () => {
     .reduce((sum, emp) => sum + (emp.salary.netPayable || 0), 0);
 
   const pendingSalaries = currentMonthSalaries.filter(emp => !emp.salary).length;
-
   const monthlyReports = currentMonthSalaries.filter(emp => emp.salary).length;
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
       <Sidebar />
       <div className="flex-1 transition-all duration-300 ease-in-out">
+        {/* Header */}
         <div className="bg-white h-20 flex items-center justify-between px-6 m-4 rounded-lg shadow-lg">
           <div className="flex items-center">
             <Link
@@ -63,13 +62,11 @@ const AdminPanel = () => {
             >
               <ChevronLeft className="w-5 h-5" />
             </Link>
-            <h1 className="text-4xl font-bold text-black">
-              Admin Dashboard
-            </h1>
+            <h1 className="text-4xl font-bold text-black">Admin Dashboard</h1>
           </div>
           <div className="flex items-center gap-4">
             <div className="text-right">
-              <p className="text-sm font-medium text-gray-900">{user?.name}</p>
+              <p className="text-sm font-medium text-gray-900">{user?.firstName} {user?.lastName}</p>
               <p className="text-xs text-gray-600">
                 <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                   user?.role === 'SUPER_ADMIN' ? 'bg-purple-100 text-purple-800' :
@@ -77,92 +74,70 @@ const AdminPanel = () => {
                   user?.role === 'MANAGER' ? 'bg-green-100 text-green-800' :
                   'bg-gray-100 text-gray-800'
                 }`}>
-                  {user?.role?.replace('_', ' ')}
+                  {user?.role}
                 </span>
               </p>
             </div>
+            <button
+              onClick={logout}
+              className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </button>
           </div>
         </div>
 
-        <div className="container mx-auto px-4 py-8 mt-10">
-          <div className="bg-white rounded-lg shadow-lg p-4 mb-6">
-            <div className="flex flex-wrap gap-4 items-center">
-              <label className="text-sm font-medium text-gray-700">Select Month/Year:</label>
-              <select
-                value={currentMonth}
-                onChange={(e) => setCurrentMonth(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map(month => (
-                  <option key={month} value={month}>{month}</option>
-                ))}
-              </select>
-              <select
-                value={currentYear}
-                onChange={(e) => setCurrentYear(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {['2023', '2024', '2025'].map(year => (
-                  <option key={year} value={year}>{year}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="p-6 space-y-6">
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="bg-white rounded-lg shadow-lg p-6">
-              <div className="flex items-center">
-                <div className="p-3 rounded-full bg-blue-100 text-blue-600">
-                  <Users className="w-8 h-8" />
-                </div>
-                <div className="ml-4">
+              <div className="flex items-center justify-between">
+                <div>
                   <p className="text-sm font-medium text-gray-600">Total Employees</p>
                   <p className="text-2xl font-bold text-gray-900">{totalEmployees}</p>
                 </div>
+                <Users className="w-12 h-12 text-blue-500" />
               </div>
             </div>
 
             <div className="bg-white rounded-lg shadow-lg p-6">
-              <div className="flex items-center">
-                <div className="p-3 rounded-full bg-green-100 text-green-600">
-                  <DollarSign className="w-8 h-8" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Salary Paid ({currentMonth} {currentYear})</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Total Salary Paid</p>
                   <p className="text-2xl font-bold text-gray-900">₹{totalSalaryPaid.toLocaleString()}</p>
                 </div>
+                <DollarSign className="w-12 h-12 text-green-500" />
               </div>
             </div>
 
             <div className="bg-white rounded-lg shadow-lg p-6">
-              <div className="flex items-center">
-                <div className="p-3 rounded-full bg-yellow-100 text-yellow-600">
-                  <Clock className="w-8 h-8" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Pending Salaries ({currentMonth} {currentYear})</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Pending Salaries</p>
                   <p className="text-2xl font-bold text-gray-900">{pendingSalaries}</p>
                 </div>
+                <Clock className="w-12 h-12 text-yellow-500" />
               </div>
             </div>
 
             <div className="bg-white rounded-lg shadow-lg p-6">
-              <div className="flex items-center">
-                <div className="p-3 rounded-full bg-purple-100 text-purple-600">
-                  <FileText className="w-8 h-8" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Processed Salaries ({currentMonth} {currentYear})</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Monthly Salaries ({currentMonth} {currentYear})</p>
                   <p className="text-2xl font-bold text-gray-900">{monthlyReports}</p>
                 </div>
+                <FileText className="w-12 h-12 text-purple-500" />
               </div>
             </div>
           </div>
 
+          {/* Quick Actions */}
           <div className="bg-white rounded-lg shadow-lg p-6">
             <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Available to all authenticated users */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              
+              {/* 1. Check-In - Available to ALL authenticated users */}
               <Link
                 to="/attendance/checkin"
                 className="flex items-center p-4 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors"
@@ -174,7 +149,7 @@ const AdminPanel = () => {
                 </div>
               </Link>
 
-              {/* Available to all authenticated users */}
+              {/* 2. Apply for Leave - Available to ALL authenticated users */}
               <Link
                 to="/leave/apply"
                 className="flex items-center p-4 bg-teal-50 rounded-lg hover:bg-teal-100 transition-colors"
@@ -186,7 +161,7 @@ const AdminPanel = () => {
                 </div>
               </Link>
 
-              {/* Manager and above */}
+              {/* 3. Attendance Approval - Manager and above */}
               <RoleGuard roles={['MANAGER', 'HR_ADMIN', 'SUPER_ADMIN']}>
                 <Link
                   to="/admin/attendance"
@@ -195,12 +170,12 @@ const AdminPanel = () => {
                   <ClipboardCheck className="w-6 h-6 text-orange-600 mr-3" />
                   <div>
                     <p className="font-medium text-gray-900">Attendance Approval</p>
-                    <p className="text-sm text-gray-600">Approve/reject employee attendance</p>
+                    <p className="text-sm text-gray-600">Approve/reject attendance</p>
                   </div>
                 </Link>
               </RoleGuard>
 
-              {/* Manager and above */}
+              {/* 4. Leave Management - Manager and above */}
               <RoleGuard roles={['MANAGER', 'HR_ADMIN', 'SUPER_ADMIN']}>
                 <Link
                   to="/leave/manage"
@@ -209,12 +184,12 @@ const AdminPanel = () => {
                   <Calendar className="w-6 h-6 text-cyan-600 mr-3" />
                   <div>
                     <p className="font-medium text-gray-900">Leave Management</p>
-                    <p className="text-sm text-gray-600">Approve/reject leave applications</p>
+                    <p className="text-sm text-gray-600">Approve/reject leaves</p>
                   </div>
                 </Link>
               </RoleGuard>
 
-              {/* HR Admin and Super Admin only */}
+              {/* 5. Manage Employee Salaries - HR Admin and Super Admin only */}
               <RoleGuard roles={['HR_ADMIN', 'SUPER_ADMIN']}>
                 <Link
                   to="/employee-table"
@@ -223,12 +198,12 @@ const AdminPanel = () => {
                   <Users className="w-6 h-6 text-blue-600 mr-3" />
                   <div>
                     <p className="font-medium text-gray-900">Manage Employee Salaries</p>
-                    <p className="text-sm text-gray-600">View and edit employee salary details</p>
+                    <p className="text-sm text-gray-600">View and edit salary details</p>
                   </div>
                 </Link>
               </RoleGuard>
 
-              {/* HR Admin and Super Admin only */}
+              {/* 6. Salary Configuration - HR Admin and Super Admin only */}
               <RoleGuard roles={['HR_ADMIN', 'SUPER_ADMIN']}>
                 <Link
                   to="/admin/salary-management"
@@ -237,12 +212,12 @@ const AdminPanel = () => {
                   <DollarSign className="w-6 h-6 text-green-600 mr-3" />
                   <div>
                     <p className="font-medium text-gray-900">Salary Configuration</p>
-                    <p className="text-sm text-gray-600">Configure PF, ESI, and deductions</p>
+                    <p className="text-sm text-gray-600">Configure PF, ESI, deductions</p>
                   </div>
                 </Link>
               </RoleGuard>
 
-              {/* HR Admin and Super Admin only */}
+              {/* 7. Process Salaries - HR Admin and Super Admin only */}
               <RoleGuard roles={['HR_ADMIN', 'SUPER_ADMIN']}>
                 <Link
                   to="/admin/salary-processing"
@@ -256,7 +231,7 @@ const AdminPanel = () => {
                 </Link>
               </RoleGuard>
 
-              {/* Super Admin only */}
+              {/* 8. Organization Settings - Super Admin ONLY */}
               <RoleGuard roles={['SUPER_ADMIN']}>
                 <Link
                   to="/admin/config"
@@ -265,10 +240,11 @@ const AdminPanel = () => {
                   <Settings className="w-6 h-6 text-purple-600 mr-3" />
                   <div>
                     <p className="font-medium text-gray-900">Organization Settings</p>
-                    <p className="text-sm text-gray-600">Configure attendance and leave policies</p>
+                    <p className="text-sm text-gray-600">Configure policies</p>
                   </div>
                 </Link>
               </RoleGuard>
+
             </div>
           </div>
         </div>
