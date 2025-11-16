@@ -17,7 +17,7 @@ const SalaryManagement = lazy(() => import('./pages/admin/SalaryManagement'));
 const ManagerDashboard = lazy(() => import('./pages/attendance/ManagerDashboard'));
 const QRDisplay = lazy(() => import('./pages/attendance/QRDisplay'));
 const EmployeeCheckin = lazy(() => import('./pages/attendance/EmployeeCheckin'));
-
+const SalaryComponents = lazy(() => import('./pages/admin/SalaryComponents'));  // 👈 NEW LINE
 // Loading component
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -46,6 +46,7 @@ function App() {
             <Route path="/employees/add" element={<ProtectedRoute><AddEmployee /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>} />
             <Route path="/admin/salary-management" element={<ProtectedRoute><SalaryManagement /></ProtectedRoute>} />
+            <Route path="/admin/salary-components" element={<ProtectedRoute><SalaryComponents /></ProtectedRoute>} />  
             <Route path="/admin/branch-management" element={<ProtectedRoute><BranchManagement /></ProtectedRoute>} />
             <Route path="/admin/attendance" element={<ProtectedRoute><ManagerDashboard /></ProtectedRoute>} />
             <Route path="/attendance/display" element={<ProtectedRoute><QRDisplay /></ProtectedRoute>} />
