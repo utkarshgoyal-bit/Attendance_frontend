@@ -66,9 +66,9 @@ const Sidebar = () => {
       items: [
         { path: '/employees', label: 'Employees', icon: Users, roles: ['HR_ADMIN', 'SUPER_ADMIN'] },
         { path: '/employees/add', label: 'Add Employee', icon: UserPlus, roles: ['HR_ADMIN', 'SUPER_ADMIN'] },
-        { path: '/admin/salary-management', label: 'Salary Management', icon: DollarSign, roles: ['HR_ADMIN', 'SUPER_ADMIN'] },
-        { path: '/admin/salary-components', label: 'Salary Components', icon: Settings, roles: ['HR_ADMIN', 'SUPER_ADMIN'] },  // 👈 NEW LINE
-      ]
+        { path: '/admin/salary-management', label: 'Salary Config', icon: DollarSign, roles: ['HR_ADMIN', 'SUPER_ADMIN'] },
+        { path: '/admin/salary-components', label: 'Salary Components', icon: Settings, roles: ['HR_ADMIN', 'SUPER_ADMIN'] },
+        { path: '/admin/salary-processing', label: 'Process Salaries', icon: DollarSign, roles: ['HR_ADMIN', 'SUPER_ADMIN'] },]
     },
 
     // Super Admin - System
@@ -140,8 +140,8 @@ const Sidebar = () => {
                           target="_blank"
                           rel="noopener noreferrer"
                           className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${isActive(item.path)
-                              ? 'bg-blue-50 text-blue-700 font-medium shadow-sm'
-                              : 'text-gray-700 hover:bg-gray-50'
+                            ? 'bg-blue-50 text-blue-700 font-medium shadow-sm'
+                            : 'text-gray-700 hover:bg-gray-50'
                             }`}
                         >
                           <item.icon className="w-5 h-5 flex-shrink-0" />
@@ -151,8 +151,8 @@ const Sidebar = () => {
                         <Link
                           to={item.path}
                           className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${isActive(item.path)
-                              ? 'bg-blue-50 text-blue-700 font-medium shadow-sm'
-                              : 'text-gray-700 hover:bg-gray-50'
+                            ? 'bg-blue-50 text-blue-700 font-medium shadow-sm'
+                            : 'text-gray-700 hover:bg-gray-50'
                             }`}
                         >
                           <item.icon className="w-5 h-5 flex-shrink-0" />
