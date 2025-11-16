@@ -12,7 +12,7 @@ const SalaryComponents = () => {
 
   const fetchComponents = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/salary-components', {
+      const response = await axios.get('http://localhost:5000/api/v2/salary-components', {
         headers: {
           'x-org-id': 'ORG001'
         }
