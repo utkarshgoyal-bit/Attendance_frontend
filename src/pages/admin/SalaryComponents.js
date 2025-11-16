@@ -11,12 +11,15 @@ const SalaryComponents = () => {
   }, []);
 
   const fetchComponents = async () => {
-    try {
-      const response = await axios.get('http://localhost:5000/api/v2/salary-components', {
-        headers: {
-          'x-org-id': 'ORG001'
-        }
-      });
+  try {
+    const token = localStorage.getItem('token'); // Get token
+    
+    const response = await axios.get('http://localhost:5000/api/v2/salary-components', {
+      headers: {
+        'Authorization': `Bearer ${token}`,  // Add auth token
+        'x-org-id': 'ORG001'
+      }
+    });
       setComponents(response.data.components);
       setLoading(false);
     } catch (error) {
