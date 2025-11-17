@@ -20,6 +20,7 @@ const EmployeeCheckin = lazy(() => import('./pages/attendance/EmployeeCheckin'))
 const SalaryComponents = lazy(() => import('./pages/admin/SalaryComponents'));
 const EmployeeSalaryStructure = lazy(() => import('./pages/admin/EmployeeSalaryStructure')); // 👈 ADD THIS // 👈 NEW LINE
 const StatutoryTemplates = lazy(() => import('./pages/admin/StatutoryTemplates')); // 👈 ADD THIS
+const CreateTemplate = lazy(() => import('./pages/admin/CreateTemplate'));
 // Loading component
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -61,6 +62,8 @@ function App() {
             <Route path="/admin/config" element={<ProtectedRoute><ComingSoon title="Organization Settings" /></ProtectedRoute>} />
             <Route path="/admin/employee-salary/:employeeId" element={<ProtectedRoute><EmployeeSalaryStructure /></ProtectedRoute>} />
             <Route path="/admin/statutory-templates" element={<ProtectedRoute><StatutoryTemplates /></ProtectedRoute>} /> {/* 👈 ADD THIS */}
+            <Route path="/admin/statutory-templates/create" element={<ProtectedRoute><CreateTemplate /></ProtectedRoute>} /> {/* 👈 ADD THIS */}
+<Route path="/admin/statutory-templates/edit/:id" element={<ProtectedRoute><CreateTemplate /></ProtectedRoute>} /> {/* 👈 ADD THIS TOO */}
 
             {/* 404 */}
             <Route path="*" element={<Navigate to="/login" replace />} />
