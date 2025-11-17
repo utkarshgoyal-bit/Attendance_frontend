@@ -21,6 +21,7 @@ const SalaryComponents = lazy(() => import('./pages/admin/SalaryComponents'));
 const EmployeeSalaryStructure = lazy(() => import('./pages/admin/EmployeeSalaryStructure')); // 👈 ADD THIS // 👈 NEW LINE
 const StatutoryTemplates = lazy(() => import('./pages/admin/StatutoryTemplates')); // 👈 ADD THIS
 const CreateTemplate = lazy(() => import('./pages/admin/CreateTemplate'));
+const BulkSalaryProcessing = lazy(() => import('./pages/admin/BulkSalaryProcessing'));
 // Loading component
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -54,6 +55,7 @@ function App() {
             <Route path="/admin/attendance" element={<ProtectedRoute><ManagerDashboard /></ProtectedRoute>} />
             <Route path="/attendance/display" element={<ProtectedRoute><QRDisplay /></ProtectedRoute>} />
             <Route path="/attendance/checkin" element={<ProtectedRoute><EmployeeCheckin /></ProtectedRoute>} />
+            <Route path="/admin/bulk-salary-processing" element={<ProtectedRoute><BulkSalaryProcessing /></ProtectedRoute>} /> {/* 👈 ADD THIS */}
 
             {/* Coming Soon Routes */}
             <Route path="/leave/apply" element={<ProtectedRoute><ComingSoon title="Apply for Leave" /></ProtectedRoute>} />

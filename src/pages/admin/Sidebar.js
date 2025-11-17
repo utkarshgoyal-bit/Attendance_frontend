@@ -59,7 +59,7 @@ const Sidebar = () => {
           </Link>
         </RoleGuard>
 
-        {/* 👇 ADD THIS NEW SECTION */}
+        {/* Statutory Config */}
         <RoleGuard roles={['HR_ADMIN', 'SUPER_ADMIN']}>
           <Link
             to="/admin/statutory-templates"
@@ -70,6 +70,20 @@ const Sidebar = () => {
             </div>
             <span className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
               Statutory Config
+            </span>
+          </Link>
+        </RoleGuard>
+        {/* 👇 ADD THIS */}
+        <RoleGuard roles={['HR_ADMIN', 'SUPER_ADMIN']}>
+          <Link
+            to="/admin/bulk-salary-processing"
+            className="flex items-center w-full px-3 py-3 hover:bg-gray-200 transition-all duration-200"
+          >
+            <div className="flex justify-center w-14">
+              <DollarSign className="w-6 h-6 flex-shrink-0" />
+            </div>
+            <span className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+              Process Salaries
             </span>
           </Link>
         </RoleGuard>
