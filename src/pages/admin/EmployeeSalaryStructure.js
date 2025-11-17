@@ -15,27 +15,27 @@ const EmployeeSalaryStructure = () => {
   }, [employeeId]);
 
   const fetchData = async () => {
-  try {
-    const token = localStorage.getItem('token');
-    
-    console.log('Fetching data for employee:', employeeId); // 👈 ADD
-    
-    // Fetch employee details
-    const empResponse = await axios.get(`http://localhost:5000/api/employees/${employeeId}`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    
-    console.log('Employee response:', empResponse.data); // 👈 ADD
-    
-    // Fetch salary components
-    const compResponse = await axios.get('http://localhost:5000/api/v2/salary-components', {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'x-org-id': 'ORG001'
-      }
-    });
-    
-    console.log('Components response:', compResponse.data); // 👈 ADD
+    try {
+      const token = localStorage.getItem('token');
+
+      console.log('Fetching data for employee:', employeeId); // 👈 ADD
+
+      // Fetch employee details
+      const empResponse = await axios.get(`http://localhost:5000/api/employees/${employeeId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      console.log('Employee response:', empResponse.data); // 👈 ADD
+
+      // Fetch salary components
+      const compResponse = await axios.get('http://localhost:5000/api/v2/salary-components', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'x-org-id': 'ORG001'
+        }
+      });
+
+      console.log('Components response:', compResponse.data); // 👈 ADD
 
       setEmployee(empResponse.data);
       setComponents(compResponse.data.components);
@@ -142,7 +142,6 @@ const EmployeeSalaryStructure = () => {
   }
 
   const earningComponents = components.filter(c => c.category === 'EARNING');
-  const deductionComponents = components.filter(c => c.category === 'DEDUCTION');
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -206,37 +205,26 @@ const EmployeeSalaryStructure = () => {
             </div>
           </div>
 
-          {/* Deductions */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4 text-red-700">Deductions</h2>
-            <div className="space-y-3">
-              {deductionComponents.map(comp => (
-                <div key={comp._id} className="flex items-center gap-3 p-3 border rounded hover:bg-gray-50">
-                  <input
-                    type="checkbox"
-                    checked={structure[comp._id]?.enabled || false}
-                    onChange={() => handleComponentToggle(comp._id)}
-                    className="w-4 h-4"
-                  />
-                  <div className="flex-1">
-                    <p className="font-medium text-sm">{comp.name}</p>
-                    <p className="text-xs text-gray-500">{comp.code}</p>
-                  </div>
-                  {structure[comp._id]?.enabled && (
-                    <input
-                      type="number"
-                      value={structure[comp._id]?.value || 0}
-                      onChange={(e) => handleValueChange(comp._id, e.target.value)}
-                      className="w-32 px-3 py-1 border rounded text-sm"
-                      placeholder="Amount"
-                    />
-                  )}
-                </div>
-              ))}
+          {/* Deductions Info */}
+          <div className="bg-blue-50 rounded-lg shadow p-6 border-2 border-blue-200">
+            <h2 className="text-xl font-semibold mb-3 text-blue-800">📋 Automatic Deductions</h2>
+            <div className="space-y-2 text-sm text-blue-900">
+              <p className="flex items-start gap-2">
+                <span className="font-semibold">•</span>
+                <span>PF, ESI, PT and other statutory deductions are calculated <strong>automatically</strong> based on configured templates.</span>
+              </p>
+              <p className="flex items-start gap-2">
+                <span className="font-semibold">•</span>
+                <span>Deductions apply based on salary thresholds, attendance, and government rules.</span>
+              </p>
+              <p className="flex items-start gap-2">
+                <span className="font-semibold">•</span>
+                <span>You only need to assign earnings here. Deductions will be handled during salary processing.</span>
+              </p>
             </div>
-            <div className="mt-4 pt-4 border-t">
-              <p className="text-lg font-semibold text-red-700">
-                Total Deductions: ₹{calculateTotal('DEDUCTION').toLocaleString()}
+            <div className="mt-4 pt-4 border-t border-blue-300">
+              <p className="text-sm text-blue-800">
+                <strong>Configured Templates:</strong> PF (12%), ESI (0.75%), PT (₹200)
               </p>
             </div>
           </div>
@@ -247,18 +235,11 @@ const EmployeeSalaryStructure = () => {
           <h2 className="text-xl font-semibold mb-4">Summary</h2>
           <div className="space-y-2">
             <div className="flex justify-between text-lg">
-              <span>Gross Earnings:</span>
+              <span>Gross Earnings (CTC):</span>
               <span className="font-semibold text-green-700">₹{calculateTotal('EARNING').toLocaleString()}</span>
             </div>
-            <div className="flex justify-between text-lg">
-              <span>Total Deductions:</span>
-              <span className="font-semibold text-red-700">₹{calculateTotal('DEDUCTION').toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between text-xl font-bold pt-3 border-t">
-              <span>Net Salary:</span>
-              <span className="text-blue-700">
-                ₹{(calculateTotal('EARNING') - calculateTotal('DEDUCTION')).toLocaleString()}
-              </span>
+            <div className="pt-3 border-t text-sm text-gray-600">
+              <p>💡 Deductions (PF, ESI, PT) will be calculated automatically during salary processing based on attendance and statutory rules.</p>
             </div>
           </div>
         </div>

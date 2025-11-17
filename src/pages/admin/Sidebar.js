@@ -1,4 +1,4 @@
-import { CircleDollarSign, Settings, DollarSign } from 'lucide-react';
+import { CircleDollarSign, Settings, DollarSign, CheckCircle } from 'lucide-react'; // 👈 Add CheckCircle
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -73,7 +73,7 @@ const Sidebar = () => {
             </span>
           </Link>
         </RoleGuard>
-        {/* 👇 ADD THIS */}
+        {/* Process Salaries */}
         <RoleGuard roles={['HR_ADMIN', 'SUPER_ADMIN']}>
           <Link
             to="/admin/bulk-salary-processing"
@@ -87,6 +87,20 @@ const Sidebar = () => {
             </span>
           </Link>
         </RoleGuard>
+        {/* 👇 ADD THIS */}
+<RoleGuard roles={['HR_ADMIN', 'SUPER_ADMIN']}>
+  <Link
+    to="/admin/salary-approval"
+    className="flex items-center w-full px-3 py-3 hover:bg-gray-200 transition-all duration-200"
+  >
+    <div className="flex justify-center w-14">
+      <CheckCircle className="w-6 h-6 flex-shrink-0" />
+    </div>
+    <span className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+      Approve Salaries
+    </span>
+  </Link>
+</RoleGuard>
 
         {/* Super Admin only */}
         <RoleGuard roles={['SUPER_ADMIN']}>
