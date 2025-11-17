@@ -17,7 +17,8 @@ const SalaryManagement = lazy(() => import('./pages/admin/SalaryManagement'));
 const ManagerDashboard = lazy(() => import('./pages/attendance/ManagerDashboard'));
 const QRDisplay = lazy(() => import('./pages/attendance/QRDisplay'));
 const EmployeeCheckin = lazy(() => import('./pages/attendance/EmployeeCheckin'));
-const SalaryComponents = lazy(() => import('./pages/admin/SalaryComponents'));  // 👈 NEW LINE
+const SalaryComponents = lazy(() => import('./pages/admin/SalaryComponents'));
+const EmployeeSalaryStructure = lazy(() => import('./pages/admin/EmployeeSalaryStructure')); // 👈 ADD THIS // 👈 NEW LINE
 // Loading component
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -57,6 +58,7 @@ function App() {
             <Route path="/leave/manage" element={<ProtectedRoute><ComingSoon title="Leave Management" /></ProtectedRoute>} />
             <Route path="/admin/salary-processing" element={<ProtectedRoute><ComingSoon title="Process Salaries" /></ProtectedRoute>} />
             <Route path="/admin/config" element={<ProtectedRoute><ComingSoon title="Organization Settings" /></ProtectedRoute>} />
+            <Route path="/admin/employee-salary/:employeeId" element={<ProtectedRoute><EmployeeSalaryStructure /></ProtectedRoute>} />
 
             {/* 404 */}
             <Route path="*" element={<Navigate to="/login" replace />} />

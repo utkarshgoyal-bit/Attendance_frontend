@@ -283,186 +283,196 @@ const EmployeeTable = () => {
                 Employee Salary Details
               </h1>
             </div>
-          <div className="px-6 py-4 bg-gray-50">
-            <div className="flex flex-wrap gap-4 items-center justify-between">
-              <div className="flex flex-wrap text-sm gap-4 items-center">
-                <input
-                  type="text"
-                  placeholder="🔍 Search by name, ID, email..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <select
-                  value={selectedMonth}
-                  onChange={(e) => setSelectedMonth(e.target.value)}
-                  className="px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            <div className="px-6 py-4 bg-gray-50">
+              <div className="flex flex-wrap gap-4 items-center justify-between">
+                <div className="flex flex-wrap text-sm gap-4 items-center">
+                  <input
+                    type="text"
+                    placeholder="🔍 Search by name, ID, email..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <select
+                    value={selectedMonth}
+                    onChange={(e) => setSelectedMonth(e.target.value)}
+                    className="px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    {months.map((month) => (
+                      <option key={month} value={month}>
+                        {month}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    value={selectedYear}
+                    onChange={(e) => setSelectedYear(e.target.value)}
+                    className="px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    {years.map((year) => (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <button
+                  onClick={() => handleExport(selectedMonth, selectedYear, filteredAndSortedEmployees)}
+                  className="px-4 py-2 bg-blue-950 text-white rounded hover:bg-blue-900"
                 >
-                  {months.map((month) => (
-                    <option key={month} value={month}>
-                      {month}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  value={selectedYear}
-                  onChange={(e) => setSelectedYear(e.target.value)}
-                  className="px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  {years.map((year) => (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
-                  ))}
-                </select>
+                  Export
+                </button>
               </div>
-              <button
-                onClick={() => handleExport(selectedMonth, selectedYear, filteredAndSortedEmployees)}
-                className="px-4 py-2 bg-blue-950 text-white rounded hover:bg-blue-900"
-              >
-                Export
-              </button>
             </div>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Sr No.
-                  </th>
-                  <th
-                    className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort("name")}
-                  >
-                    Name {sortBy === "name" && (sortOrder === "asc" ? "↑" : "↓")}
-                  </th>
-                  <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Base
-                  </th>
-                  <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    HRA
-                  </th>
-                  <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Conveyance
-                  </th>
-                  <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Attendance (Days)
-                  </th>
-                  <th
-                    className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort("netPayable")}
-                  >
-                    Net Payable {sortBy === "netPayable" && (sortOrder === "asc" ? "↑" : "↓")}
-                  </th>
-                  <th
-                    className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort("ctc")}
-                  >
-                    CTC {sortBy === "ctc" && (sortOrder === "asc" ? "↑" : "↓")}
-                  </th>
-                  <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {loading ? (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
                   <tr>
-                    <td colSpan="9" className="px-6 py-12 text-center">
-                      <div className="flex flex-col items-center justify-center">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-                        <p className="text-gray-600">Loading employees...</p>
-                      </div>
-                    </td>
-                  </tr>
-                ) : filteredAndSortedEmployees.length === 0 ? (
-                  <tr>
-                    <td colSpan="9" className="px-6 py-12 text-center">
-                      <div className="text-center">
-                        <p className="text-6xl mb-4">👥</p>
-                        <p className="text-xl font-semibold text-gray-700 mb-2">No employees found</p>
-                        <p className="text-gray-500">
-                          {searchTerm ? `No results for "${searchTerm}"` : 'No employees available'}
-                        </p>
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  filteredAndSortedEmployees.map((employee, index) => (
-                    <tr
-                      key={employee.employeeId}
-                      className="hover:bg-gray-50 transition-colors duration-200"
+                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Sr No.
+                    </th>
+                    <th
+                      className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                      onClick={() => handleSort("name")}
                     >
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                        {index + 1}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {employee.name}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        ₹{employee.base.toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        ₹{employee.hra.toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        ₹{employee.conveyance.toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {editing === index ? (
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="number"
-                              value={employee.attendanceDays}
-                              onChange={(e) =>
-                                updateEmployee(
-                                  index,
-                                  "attendanceDays",
-                                  e.target.value
-                                )
-                              }
-                              className="w-16 px-2 py-1 border rounded"
-                              min="0"
-                              max={employee.totalDays}
-                            />
-                            <span>/ {employee.totalDays}</span>
-                          </div>
-                        ) : (
-                          `${employee.attendanceDays}/${employee.totalDays}`
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600">
-                        ₹{(employee.netPayable !== null ? employee.netPayable : calculateNetPayable(employee, salaryConfig)).toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-blue-600">
-                        ₹{(employee.ctc !== null ? employee.ctc : calculateCTC(employee, salaryConfig)).toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {editing === index ? (
-                          <button
-                            onClick={() => handleSave(index)}
-                            className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
-                          >
-                            Save
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => handleEdit(index)}
-                            className="px-3 py-1 bg-blue-950 text-white rounded hover:bg-blue-900"
-                          >
-                            {employee.netPayable === null ? "Add Attendance" : "Edit"}
-                          </button>
-                        )}
+                      Name {sortBy === "name" && (sortOrder === "asc" ? "↑" : "↓")}
+                    </th>
+                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Base
+                    </th>
+                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      HRA
+                    </th>
+                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Conveyance
+                    </th>
+                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Attendance (Days)
+                    </th>
+                    <th
+                      className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                      onClick={() => handleSort("netPayable")}
+                    >
+                      Net Payable {sortBy === "netPayable" && (sortOrder === "asc" ? "↑" : "↓")}
+                    </th>
+                    <th
+                      className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                      onClick={() => handleSort("ctc")}
+                    >
+                      CTC {sortBy === "ctc" && (sortOrder === "asc" ? "↑" : "↓")}
+                    </th>
+                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Edit | Salary
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {loading ? (
+                    <tr>
+                      <td colSpan="9" className="px-6 py-12 text-center">
+                        <div className="flex flex-col items-center justify-center">
+                          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+                          <p className="text-gray-600">Loading employees...</p>
+                        </div>
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : filteredAndSortedEmployees.length === 0 ? (
+                    <tr>
+                      <td colSpan="9" className="px-6 py-12 text-center">
+                        <div className="text-center">
+                          <p className="text-6xl mb-4">👥</p>
+                          <p className="text-xl font-semibold text-gray-700 mb-2">No employees found</p>
+                          <p className="text-gray-500">
+                            {searchTerm ? `No results for "${searchTerm}"` : 'No employees available'}
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredAndSortedEmployees.map((employee, index) => (
+                      <tr
+                        key={employee.employeeId}
+                        className="hover:bg-gray-50 transition-colors duration-200"
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                          {index + 1}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {employee.name}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          ₹{employee.base.toLocaleString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          ₹{employee.hra.toLocaleString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          ₹{employee.conveyance.toLocaleString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {editing === index ? (
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="number"
+                                value={employee.attendanceDays}
+                                onChange={(e) =>
+                                  updateEmployee(
+                                    index,
+                                    "attendanceDays",
+                                    e.target.value
+                                  )
+                                }
+                                className="w-16 px-2 py-1 border rounded"
+                                min="0"
+                                max={employee.totalDays}
+                              />
+                              <span>/ {employee.totalDays}</span>
+                            </div>
+                          ) : (
+                            `${employee.attendanceDays}/${employee.totalDays}`
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600">
+                          ₹{(employee.netPayable !== null ? employee.netPayable : calculateNetPayable(employee, salaryConfig)).toLocaleString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-blue-600">
+                          ₹{(employee.ctc !== null ? employee.ctc : calculateCTC(employee, salaryConfig)).toLocaleString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <div className="flex gap-2">
+                            {editing === index ? (
+                              <button
+                                onClick={() => handleSave(index)}
+                                className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+                              >
+                                Save
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => handleEdit(index)}
+                                className="px-3 py-1 bg-blue-950 text-white rounded hover:bg-blue-900"
+                              >
+                                {employee.netPayable === null ? "Add Attendance" : "Edit"}
+                              </button>
+                            )}
+                            <a href={`/admin/employee-salary/${employee.employeeId}`}
+                              className="px-3 py-1 bg-purple-600 text-white rounded hover:bg-purple-700"
+                            >
+                              Salary
+                            </a>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
-      </div>
       </div>
     </>
   );
