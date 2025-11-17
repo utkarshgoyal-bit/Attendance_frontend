@@ -15,25 +15,31 @@ const EmployeeSalaryStructure = () => {
   }, [employeeId]);
 
   const fetchData = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      
-      // Fetch employee details
-      const empResponse = await axios.get(`http://localhost:5000/api/employees/${employeeId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      
-      // Fetch salary components
-      const compResponse = await axios.get('http://localhost:5000/api/v2/salary-components', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'x-org-id': 'ORG001'
-        }
-      });
-      
+  try {
+    const token = localStorage.getItem('token');
+    
+    console.log('Fetching data for employee:', employeeId); // 👈 ADD
+    
+    // Fetch employee details
+    const empResponse = await axios.get(`http://localhost:5000/api/employees/${employeeId}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    
+    console.log('Employee response:', empResponse.data); // 👈 ADD
+    
+    // Fetch salary components
+    const compResponse = await axios.get('http://localhost:5000/api/v2/salary-components', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'x-org-id': 'ORG001'
+      }
+    });
+    
+    console.log('Components response:', compResponse.data); // 👈 ADD
+
       setEmployee(empResponse.data);
       setComponents(compResponse.data.components);
-      
+
       // Initialize structure with existing values if any
       const initialStructure = {};
       compResponse.data.components.forEach(comp => {
@@ -43,7 +49,7 @@ const EmployeeSalaryStructure = () => {
         };
       });
       setStructure(initialStructure);
-      
+
       setLoading(false);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -74,7 +80,7 @@ const EmployeeSalaryStructure = () => {
   const handleSave = async () => {
     try {
       const token = localStorage.getItem('token');
-      
+
       // Prepare payload
       const enabledComponents = Object.keys(structure)
         .filter(key => structure[key].enabled)
@@ -83,14 +89,38 @@ const EmployeeSalaryStructure = () => {
           value: structure[key].value
         }));
 
-      console.log('Saving structure:', enabledComponents);
-      
-      // TODO: Save to backend when API is ready
+      if (enabledComponents.length === 0) {
+        alert('Please select at least one component');
+        return;
+      }
+
+      const payload = {
+        employeeId: employeeId,
+        orgId: 'ORG001',
+        components: enabledComponents,
+        effectiveFrom: new Date()
+      };
+
+      console.log('Saving structure:', payload);
+
+      // Save to backend
+      const response = await axios.post(
+        'http://localhost:5000/api/employee-salary-structure',
+        payload,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      console.log('Save response:', response.data);
       alert('Salary structure saved successfully!');
-      
+
     } catch (error) {
       console.error('Error saving structure:', error);
-      alert('Failed to save salary structure');
+      alert('Failed to save salary structure: ' + (error.response?.data?.message || error.message));
     }
   };
 
