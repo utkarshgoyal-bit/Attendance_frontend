@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import FloatingCalculator from './components/FloatingCalculator';
-
+import OrgSettings from './pages/admin/OrgSettings';
 // ✅ Eager load (used immediately)
 import Login from './pages/auth/Login';
 
@@ -65,12 +65,12 @@ function App() {
             <Route path="/leave/apply" element={<ProtectedRoute><ComingSoon title="Apply for Leave" /></ProtectedRoute>} />
             <Route path="/leave/manage" element={<ProtectedRoute><ComingSoon title="Leave Management" /></ProtectedRoute>} />
             <Route path="/admin/salary-processing" element={<ProtectedRoute><ComingSoon title="Process Salaries" /></ProtectedRoute>} />
-            <Route path="/admin/config" element={<ProtectedRoute><ComingSoon title="Organization Settings" /></ProtectedRoute>} />
             <Route path="/admin/employee-salary/:employeeId" element={<ProtectedRoute><EmployeeSalaryStructure /></ProtectedRoute>} />
             <Route path="/admin/statutory-templates" element={<ProtectedRoute><StatutoryTemplates /></ProtectedRoute>} /> {/* 👈 ADD THIS */}
             <Route path="/admin/statutory-templates/create" element={<ProtectedRoute><CreateTemplate /></ProtectedRoute>} /> {/* 👈 ADD THIS */}
-<Route path="/admin/statutory-templates/edit/:id" element={<ProtectedRoute><CreateTemplate /></ProtectedRoute>} /> {/* 👈 ADD THIS TOO */}
-
+            <Route path="/admin/statutory-templates/edit/:id" element={<ProtectedRoute><CreateTemplate /></ProtectedRoute>} /> {/* 👈 ADD THIS TOO */}
+            <Route path="/admin/config" element={<ProtectedRoute><OrgSettings /></ProtectedRoute>} />
+            
             {/* 404 */}
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
