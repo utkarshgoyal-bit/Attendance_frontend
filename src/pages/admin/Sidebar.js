@@ -102,6 +102,7 @@ const Sidebar = () => {
   </Link>
 </RoleGuard>
 
+
 {/* 👇 ADD THIS */}
 <RoleGuard roles={['HR_ADMIN', 'SUPER_ADMIN']}>
   <Link
@@ -117,6 +118,7 @@ const Sidebar = () => {
   </Link>
 </RoleGuard>
 
+
         {/* Super Admin only */}
         <RoleGuard roles={['SUPER_ADMIN']}>
           <Link
@@ -131,6 +133,11 @@ const Sidebar = () => {
               Settings
             </span>
           </Link>
+
+<Link to="/admin/organizations" className="sidebar-link">
+  <DollarSign className="w-5 h-5" />
+  <span>Organizations</span>
+</Link>
         </RoleGuard>
       </div>
 
