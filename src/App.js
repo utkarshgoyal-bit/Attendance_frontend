@@ -4,6 +4,8 @@ import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import FloatingCalculator from './components/FloatingCalculator';
 import OrgSettings from './pages/admin/OrgSettings';
+import ManageOrganizations from './pages/admin/ManageOrganizations';
+import CreateEditOrganization from './pages/admin/CreateEditOrganization';
 // ✅ Eager load (used immediately)
 import Login from './pages/auth/Login';
 
@@ -52,16 +54,21 @@ function App() {
             <Route path="/employees/add" element={<ProtectedRoute><AddEmployee /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>} />
             <Route path="/admin/salary-management" element={<ProtectedRoute><SalaryManagement /></ProtectedRoute>} />
-            <Route path="/admin/salary-components" element={<ProtectedRoute><SalaryComponents /></ProtectedRoute>} />  
+            <Route path="/admin/salary-components" element={<ProtectedRoute><SalaryComponents /></ProtectedRoute>} />
             <Route path="/admin/branch-management" element={<ProtectedRoute><BranchManagement /></ProtectedRoute>} />
             <Route path="/admin/attendance" element={<ProtectedRoute><ManagerDashboard /></ProtectedRoute>} />
             <Route path="/attendance/display" element={<ProtectedRoute><QRDisplay /></ProtectedRoute>} />
             <Route path="/attendance/checkin" element={<ProtectedRoute><EmployeeCheckin /></ProtectedRoute>} />
-            <Route path="/admin/bulk-salary-processing" element={<ProtectedRoute><BulkSalaryProcessing /></ProtectedRoute>} /> 
+            <Route path="/admin/bulk-salary-processing" element={<ProtectedRoute><BulkSalaryProcessing /></ProtectedRoute>} />
             <Route path="/admin/approved-salaries" element={<ProtectedRoute><ApprovedSalaries /></ProtectedRoute>} />
-            <Route path="/admin/salary-approval" element={<ProtectedRoute><SalaryApproval /></ProtectedRoute>} />{/* 👈 ADD THIS */}
+            <Route path="/admin/salary-approval" element={<ProtectedRoute><SalaryApproval /></ProtectedRoute>} />
+            <Route path="/admin/organizations" element={<ProtectedRoute><ManageOrganizations /></ProtectedRoute>} />
+            <Route path="/admin/organizations/create" element={<ProtectedRoute><CreateEditOrganization /></ProtectedRoute>} />
+            <Route path="/admin/organizations/edit/:id" element={<ProtectedRoute><CreateEditOrganization /></ProtectedRoute>} />
+           
 
             {/* Coming Soon Routes */}
+
             <Route path="/leave/apply" element={<ProtectedRoute><ComingSoon title="Apply for Leave" /></ProtectedRoute>} />
             <Route path="/leave/manage" element={<ProtectedRoute><ComingSoon title="Leave Management" /></ProtectedRoute>} />
             <Route path="/admin/salary-processing" element={<ProtectedRoute><ComingSoon title="Process Salaries" /></ProtectedRoute>} />
@@ -70,7 +77,7 @@ function App() {
             <Route path="/admin/statutory-templates/create" element={<ProtectedRoute><CreateTemplate /></ProtectedRoute>} /> {/* 👈 ADD THIS */}
             <Route path="/admin/statutory-templates/edit/:id" element={<ProtectedRoute><CreateTemplate /></ProtectedRoute>} /> {/* 👈 ADD THIS TOO */}
             <Route path="/admin/config" element={<ProtectedRoute><OrgSettings /></ProtectedRoute>} />
-            
+
             {/* 404 */}
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
