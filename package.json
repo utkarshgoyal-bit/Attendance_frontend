@@ -3,9 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.1",
-    "@mui/material": "^7.3.4",
     "axios": "^1.12.2",
     "file-saver": "^2.0.5",
     "lucide-react": "^0.548.0",

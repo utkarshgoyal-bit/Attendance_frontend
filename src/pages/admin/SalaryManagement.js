@@ -5,9 +5,6 @@ import {
   fetchSalaryConfig,
   updateSalaryConfig,
 } from "../../services/salaryConfigApi";
-import Box from '@mui/material/Box';
-import Slider from '@mui/material/Slider';
-import Tooltip from '@mui/material/Tooltip';
 import { ChevronLeft } from "lucide-react";
 
 const SalaryManagement = () => {
@@ -41,10 +38,6 @@ const SalaryManagement = () => {
     setEsiMin(newValue[0]);
     setEsiMax(newValue[1]);
   };
-
-  function valuetext(value) {
-    return `₹${value}`;
-  }
 
   useEffect(() => {
     const loadConfig = async () => {
@@ -166,23 +159,52 @@ const SalaryManagement = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      PF Threshold
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      PF Threshold Range
                     </label>
-                    <div className="flex justify-center">
-                      <Tooltip title={`Min: ₹${pfMin} Max: ₹${pfMax}`}>
-                        <Box sx={{ width: 300 }}>
-                          <Slider
-                            getAriaLabel={() => "PF Threshold range"}
-                            value={pfSliderValue}
-                            onChange={handlePfSliderChange}
-                            valueLabelDisplay="auto"
-                            getAriaValueText={valuetext}
-                            min={0}
-                            max={50000}
-                          />
-                        </Box>
-                      </Tooltip>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs text-gray-600 mb-1">
+                          Minimum (₹)
+                        </label>
+                        <input
+                          type="number"
+                          value={pfMin}
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value) || 0;
+                            setPfMin(value);
+                            setPfSliderValue([value, pfMax]);
+                          }}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="0"
+                          min="0"
+                          max="50000"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-600 mb-1">
+                          Maximum (₹)
+                        </label>
+                        <input
+                          type="number"
+                          value={pfMax}
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value) || 0;
+                            setPfMax(value);
+                            setPfSliderValue([pfMin, value]);
+                          }}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="15000"
+                          min="0"
+                          max="50000"
+                        />
+                      </div>
+                    </div>
+                    <div className="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-blue-500 transition-all duration-300"
+                        style={{ width: `${(pfMax / 50000) * 100}%` }}
+                      />
                     </div>
                   </div>
                 </div>
@@ -225,23 +247,52 @@ const SalaryManagement = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      ESI Threshold
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      ESI Threshold Range
                     </label>
-                    <div className="flex justify-center">
-                      <Tooltip title={`Min: ₹${esiMin} Max: ₹${esiMax}`}>
-                        <Box sx={{ width: 300 }}>
-                          <Slider
-                            getAriaLabel={() => "ESI Threshold range"}
-                            value={esiSliderValue}
-                            onChange={handleEsiSliderChange}
-                            valueLabelDisplay="auto"
-                            getAriaValueText={valuetext}
-                            min={0}
-                            max={50000}
-                          />
-                        </Box>
-                      </Tooltip>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs text-gray-600 mb-1">
+                          Minimum (₹)
+                        </label>
+                        <input
+                          type="number"
+                          value={esiMin}
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value) || 0;
+                            setEsiMin(value);
+                            setEsiSliderValue([value, esiMax]);
+                          }}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="0"
+                          min="0"
+                          max="50000"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-600 mb-1">
+                          Maximum (₹)
+                        </label>
+                        <input
+                          type="number"
+                          value={esiMax}
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value) || 0;
+                            setEsiMax(value);
+                            setEsiSliderValue([esiMin, value]);
+                          }}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="21000"
+                          min="0"
+                          max="50000"
+                        />
+                      </div>
+                    </div>
+                    <div className="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-green-500 transition-all duration-300"
+                        style={{ width: `${(esiMax / 50000) * 100}%` }}
+                      />
                     </div>
                   </div>
                 </div>
