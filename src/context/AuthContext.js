@@ -1,128 +1,82 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
-import axios from 'axios';
-import { setToken, getToken, removeToken, setUser, getUser, removeUser } from '../utils/auth';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { api } from '../services/api';
 
-export const AuthContext = createContext();
+const AuthContext = createContext(null);
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
+const ROLE_LEVELS = { EMPLOYEE: 1, MANAGER: 2, HR_ADMIN: 3, SUPER_ADMIN: 4 };
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUserState] = useState(null);
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = getToken();
-    const savedUser = getUser();
-    
-    console.log('🔍 Checking existing auth:', {
-      hasToken: !!token,
-      hasUser: !!savedUser
-    });
-    
-    if (token && savedUser) {
-      setUserState(savedUser);
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
     }
     setLoading(false);
   }, []);
 
   const login = async (email, password) => {
-    try {
-      console.log('🔐 Attempting login for:', email);
-      
-      const response = await axios.post('http://localhost:5000/api/auth/login', {
-        email,
-        password
-      });
-
-      console.log('📥 Login response received:', response.data);
-
-      const { token, user: userData } = response.data;
-      
-      if (!token || !userData) {
-        console.error('❌ Backend did not return token or user');
-        return { 
-          success: false, 
-          error: 'Invalid response from server' 
-        };
-      }
-      
-      console.log('💾 Saving token and user to localStorage...');
-      
-      // Save token and user
-      setToken(token);
-      setUser(userData);
-      setUserState(userData);
-
-      // Verify they were saved
-      const savedToken = getToken();
-      const savedUser = getUser();
-      
-      console.log('✅ Verification:', {
-        tokenSaved: !!savedToken,
-        userSaved: !!savedUser,
-        userData: savedUser
-      });
-
-      return { success: true };
-    } catch (error) {
-      console.error('❌ Login failed:', error);
-      return { 
-        success: false, 
-        error: error.response?.data?.message || 'Login failed' 
-      };
-    }
+    const { data } = await api.login({ email, password });
+    const userData = data.user;
+    
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('user', JSON.stringify(userData));
+    setUser(userData);
+    
+    return userData;
   };
 
   const logout = () => {
-    console.log('🚪 Logging out...');
-    removeToken();
-    removeUser();
-    setUserState(null);
-    window.location.href = '/login';
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setUser(null);
   };
 
-  const isAuthenticated = () => {
-    const token = getToken();
-    const currentUser = user || getUser();
-    
-    const authenticated = !!currentUser && !!token;
-    
-    console.log('🔐 isAuthenticated check:', {
-      hasToken: !!token,
-      hasUser: !!currentUser,
-      result: authenticated
-    });
-    
-    return authenticated;
+  const hasRole = (...roles) => {
+    if (!user?.role) return false;
+    return roles.includes(user.role);
   };
 
-  const hasRole = (allowedRoles) => {
-    if (!user || !user.role) {
-      return false;
+  const hasMinRole = (minRole) => {
+    if (!user?.role) return false;
+    return (ROLE_LEVELS[user.role] || 0) >= (ROLE_LEVELS[minRole] || 0);
+  };
+
+  const isAuthenticated = () => !!user || !!localStorage.getItem('token');
+
+  // Role shortcuts
+  const isEmployee = () => hasMinRole('EMPLOYEE');
+  const isManager = () => hasMinRole('MANAGER');
+  const isHRAdmin = () => hasMinRole('HR_ADMIN');
+  const isSuperAdmin = () => hasRole('SUPER_ADMIN');
+
+  // For testing - change role
+  const changeRole = (newRole) => {
+    if (user) {
+      const updated = { ...user, role: newRole };
+      localStorage.setItem('user', JSON.stringify(updated));
+      setUser(updated);
     }
-    
-    const rolesArray = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
-    return rolesArray.includes(user.role);
-  };
-
-  const value = {
-    user,
-    login,
-    logout,
-    isAuthenticated,
-    hasRole,
-    loading
   };
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{
+      user, loading, login, logout, setUser,
+      hasRole, hasMinRole, isAuthenticated,
+      isEmployee, isManager, isHRAdmin, isSuperAdmin,
+      changeRole
+    }}>
       {children}
     </AuthContext.Provider>
   );
 };
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) throw new Error('useAuth must be used within AuthProvider');
+  return context;
+};
+
+export { AuthContext };

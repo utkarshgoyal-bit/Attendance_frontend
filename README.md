@@ -1,70 +1,133 @@
-# Getting Started with Create React App
+# HR Frontend v2.0 - Optimized & Lightweight
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A streamlined React frontend for the HR Management System.
 
-## Available Scripts
+## 🚀 Quick Start
 
-In the project directory, you can run:
+```bash
+npm install
+npm start
+```
 
-### `npm start`
+## 📁 Project Structure
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+```
+src/
+├── components/
+│   ├── ui.jsx          # Reusable UI components (Button, Input, Table, etc.)
+│   ├── Sidebar.jsx     # Navigation sidebar
+│   └── Layout.jsx      # Page layout wrapper
+├── context/
+│   └── AuthContext.js  # Authentication state management
+├── pages/
+│   ├── auth/Login.jsx
+│   ├── Home.jsx
+│   ├── employees/
+│   │   ├── Employees.jsx
+│   │   └── AddEmployee.jsx
+│   └── attendance/
+│       └── Attendance.jsx
+├── services/
+│   └── api.js          # Centralized API client
+├── App.js              # Routes & app structure
+└── index.js            # Entry point
+```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 🎨 Components
 
-### `npm test`
+### UI Components (src/components/ui.jsx)
+- `ProtectedRoute` - Route protection with role checking
+- `RoleGuard` - Conditional rendering based on roles
+- `Button` - Styled button with variants
+- `Input` - Form input with label/error
+- `Select` - Dropdown select
+- `Card` - Content card
+- `Table` - Data table
+- `Modal` - Dialog modal
+- `Toast` - Notification toast
+- `Badge` - Status badge
+- `PageLoader` - Loading spinner
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Usage
+```jsx
+import { Button, Input, Card, Badge, RoleGuard } from './components/ui';
 
-### `npm run build`
+// Button variants
+<Button variant="primary">Primary</Button>
+<Button variant="danger" loading={true}>Delete</Button>
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+// Role-based rendering
+<RoleGuard roles={['HR_ADMIN', 'SUPER_ADMIN']}>
+  <AdminOnlyContent />
+</RoleGuard>
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## 🔐 Authentication
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```jsx
+import { useAuth } from './context/AuthContext';
 
-### `npm run eject`
+const { 
+  user,           // Current user
+  login,          // Login function
+  logout,         // Logout function
+  hasRole,        // Check specific roles
+  hasMinRole,     // Check minimum role level
+  isAuthenticated // Check if logged in
+} = useAuth();
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## 🔑 Role Hierarchy
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```
+SUPER_ADMIN (4) - Full access
+  └── HR_ADMIN (3) - HR operations
+        └── MANAGER (2) - Team management
+              └── EMPLOYEE (1) - Self-service
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## 📡 API Service
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+```jsx
+import { api } from './services/api';
 
-## Learn More
+// Employees
+await api.getEmployees({ page: 1, limit: 10 });
+await api.createEmployee(data);
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+// Attendance
+await api.getTodayAttendance({ status: 'PENDING' });
+await api.approveAttendance(id);
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+// Salaries
+await api.calculateSalary({ employeeId, month, year });
+```
 
-### Code Splitting
+## 🎯 Features
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+✅ Role-based access control  
+✅ Lazy loading for performance  
+✅ Responsive design  
+✅ Reusable components  
+✅ Centralized API client  
+✅ Toast notifications  
+✅ Form validation  
 
-### Analyzing the Bundle Size
+## 🔧 Environment Variables
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+Create `.env` file:
+```
+REACT_APP_API_URL=http://localhost:5000/api
+```
 
-### Making a Progressive Web App
+## 📦 Dependencies
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+- react & react-dom
+- react-router-dom
+- axios
+- lucide-react (icons)
+- tailwindcss
 
-### Advanced Configuration
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Built with ❤️ for simplicity
