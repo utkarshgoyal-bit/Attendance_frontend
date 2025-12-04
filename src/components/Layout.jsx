@@ -1,30 +1,127 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import Sidebar from './Sidebar';
-import { ChevronLeft } from 'lucide-react';
+import { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { 
+  Building2, Users, LayoutDashboard, LogOut, Menu, X, ChevronDown,
+  Settings, Bell, User
+} from 'lucide-react';
 
-const Layout = ({ children, title, backTo, actions }) => {
+const Layout = ({ children }) => {
+  const { user, logout } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
+
+  const navItems = {
+    PLATFORM_ADMIN: [
+      { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+      { path: '/organizations', icon: Building2, label: 'Organizations' },
+      { path: '/users', icon: Users, label: 'Users' },
+    ],
+    ORG_ADMIN: [
+      { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+      { path: '/employees', icon: Users, label: 'Employees' },
+      { path: '/settings', icon: Settings, label: 'Settings' },
+      { path: '/users', icon: Users, label: 'Users' },
+    ],
+    HR_ADMIN: [
+      { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+      { path: '/employees', icon: Users, label: 'Employees' },
+      { path: '/settings', icon: Settings, label: 'Settings' },
+      { path: '/users', icon: Users, label: 'Users' },
+    ],
+    MANAGER: [
+      { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+      { path: '/employees', icon: Users, label: 'My Team' },
+    ],
+    EMPLOYEE: [
+      { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    ],
+  };
+
+  const items = navItems[user?.role] || [];
+
   return (
-    <div className="min-h-screen bg-gray-100 flex">
-      <Sidebar />
-      <div className="flex-1 ml-64">
+    <div className="min-h-screen bg-gray-50">
+      {/* Sidebar */}
+      <aside className={`fixed top-0 left-0 z-40 h-screen bg-white border-r transition-transform ${sidebarOpen ? 'w-64' : 'w-20'}`}>
+        <div className="h-16 flex items-center justify-between px-4 border-b">
+          {sidebarOpen && <span className="text-xl font-bold text-blue-600">HRMS</span>}
+          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 hover:bg-gray-100 rounded-lg">
+            {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
+        
+        <nav className="p-4 space-y-2">
+          {items.map(item => (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                location.pathname === item.path ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-100'
+              }`}
+            >
+              <item.icon size={20} />
+              {sidebarOpen && <span>{item.label}</span>}
+            </Link>
+          ))}
+        </nav>
+      </aside>
+
+      {/* Main Content */}
+      <div className={`${sidebarOpen ? 'ml-64' : 'ml-20'} transition-all`}>
         {/* Header */}
-        <header className="bg-white shadow-sm px-6 py-4 flex items-center justify-between">
+        <header className="h-16 bg-white border-b flex items-center justify-between px-6">
+          <h1 className="text-lg font-semibold">
+            {items.find(i => i.path === location.pathname)?.label || 'Dashboard'}
+          </h1>
+          
           <div className="flex items-center gap-4">
-            {backTo && (
-              <Link
-                to={backTo}
-                className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+            <button className="p-2 hover:bg-gray-100 rounded-lg relative">
+              <Bell size={20} />
+            </button>
+            
+            <div className="relative">
+              <button 
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded-lg"
               >
-                <ChevronLeft className="w-5 h-5" />
-              </Link>
-            )}
-            <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                  <User size={16} className="text-blue-600" />
+                </div>
+                {sidebarOpen && (
+                  <>
+                    <span className="text-sm">{user?.email}</span>
+                    <ChevronDown size={16} />
+                  </>
+                )}
+              </button>
+              
+              {userMenuOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border py-2">
+                  <div className="px-4 py-2 border-b">
+                    <p className="text-sm font-medium">{user?.email}</p>
+                    <p className="text-xs text-gray-500">{user?.role}</p>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                  >
+                    <LogOut size={16} /> Logout
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
-          {actions && <div className="flex items-center gap-3">{actions}</div>}
         </header>
 
-        {/* Content */}
+        {/* Page Content */}
         <main className="p-6">{children}</main>
       </div>
     </div>

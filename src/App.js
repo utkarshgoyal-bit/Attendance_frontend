@@ -1,75 +1,58 @@
-import React, { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
-import { ProtectedRoute, PageLoader } from './components/ui';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { ToastProvider } from './components/ui';
+import Layout from './components/Layout';
+import Login from './pages/Login';
+import FirstLogin from './pages/FirstLogin';
+import Dashboard from './pages/Dashboard';
+import Organizations from './pages/Organizations';
+import Users from './pages/Users';
+import Employees from './pages/Employees';
+import EmployeeForm from './pages/EmployeeForm';
+import EmployeeView from './pages/EmployeeView';
+import Settings from './pages/Settings';
 
-// Eager load - used immediately
-import Login from './pages/auth/Login';
+const ProtectedRoute = ({ children, roles }) => {
+  const { user, loading } = useAuth();
+  
+  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  if (!user) return <Navigate to="/login" />;
+  if (user.isFirstLogin || !user.hasSecurityQuestions) return <Navigate to="/first-login" />;
+  if (roles && !roles.includes(user.role)) return <Navigate to="/dashboard" />;
+  
+  return <Layout>{children}</Layout>;
+};
 
-// Lazy load - on demand
-const Home = lazy(() => import('./pages/Home'));
-const Employees = lazy(() => import('./pages/employees/Employees'));
-const AddEmployee = lazy(() => import('./pages/employees/AddEmployee'));
-
-// Lazy load attendance components
-const AttendanceDashboard = lazy(() => 
-  import('./pages/attendance/Attendance').then(module => ({ default: module.AttendanceDashboard }))
-);
-const EmployeeCheckin = lazy(() => 
-  import('./pages/attendance/Attendance').then(module => ({ default: module.EmployeeCheckin }))
-);
-
-// Coming Soon placeholder
-const ComingSoon = ({ title }) => (
-  <div className="min-h-screen flex items-center justify-center bg-gray-100">
-    <div className="bg-white p-8 rounded-lg shadow-lg text-center max-w-md">
-      <h1 className="text-3xl font-bold text-gray-900 mb-4">{title}</h1>
-      <p className="text-gray-600 mb-6">This feature is coming soon!</p>
-      <a href="/home" className="text-blue-600 hover:underline font-medium">← Back to Home</a>
-    </div>
-  </div>
-);
+const PublicRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+  
+  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  if (user && !user.isFirstLogin && user.hasSecurityQuestions) return <Navigate to="/dashboard" />;
+  
+  return children;
+};
 
 function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Suspense fallback={<PageLoader />}>
+    <BrowserRouter>
+      <AuthProvider>
+        <ToastProvider>
           <Routes>
-            {/* Public */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/" element={<Navigate to="/login" replace />} />
-
-            {/* Protected - All Users */}
-            <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-            <Route path="/attendance/checkin" element={<ProtectedRoute><EmployeeCheckin /></ProtectedRoute>} />
-            
-            {/* Protected - Manager+ */}
-            <Route path="/admin/attendance" element={<ProtectedRoute roles={['MANAGER', 'HR_ADMIN', 'SUPER_ADMIN']}><AttendanceDashboard /></ProtectedRoute>} />
-            <Route path="/leaves/manage" element={<ProtectedRoute roles={['MANAGER', 'HR_ADMIN', 'SUPER_ADMIN']}><ComingSoon title="Leave Management" /></ProtectedRoute>} />
-
-            {/* Protected - HR Admin+ */}
-            <Route path="/employees" element={<ProtectedRoute roles={['HR_ADMIN', 'SUPER_ADMIN']}><Employees /></ProtectedRoute>} />
-            <Route path="/employees/add" element={<ProtectedRoute roles={['HR_ADMIN', 'SUPER_ADMIN']}><AddEmployee /></ProtectedRoute>} />
-            <Route path="/employees/edit/:id" element={<ProtectedRoute roles={['HR_ADMIN', 'SUPER_ADMIN']}><AddEmployee /></ProtectedRoute>} />
-            <Route path="/admin/salaries" element={<ProtectedRoute roles={['HR_ADMIN', 'SUPER_ADMIN']}><ComingSoon title="Salary Processing" /></ProtectedRoute>} />
-            <Route path="/admin/salary-approval" element={<ProtectedRoute roles={['HR_ADMIN', 'SUPER_ADMIN']}><ComingSoon title="Salary Approval" /></ProtectedRoute>} />
-            <Route path="/admin/salary-slips" element={<ProtectedRoute roles={['HR_ADMIN', 'SUPER_ADMIN']}><ComingSoon title="Salary Slips" /></ProtectedRoute>} />
-
-            {/* Protected - Super Admin */}
-            <Route path="/admin/branches" element={<ProtectedRoute roles={['SUPER_ADMIN']}><ComingSoon title="Branch Management" /></ProtectedRoute>} />
-            <Route path="/admin/config" element={<ProtectedRoute roles={['SUPER_ADMIN']}><ComingSoon title="Organization Settings" /></ProtectedRoute>} />
-            <Route path="/attendance/display" element={<ProtectedRoute roles={['SUPER_ADMIN']}><ComingSoon title="QR Display" /></ProtectedRoute>} />
-
-            {/* Leaves */}
-            <Route path="/leaves/apply" element={<ProtectedRoute><ComingSoon title="Apply Leave" /></ProtectedRoute>} />
-
-            {/* 404 */}
-            <Route path="*" element={<Navigate to="/login" replace />} />
+            <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+            <Route path="/first-login" element={<FirstLogin />} />
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/organizations" element={<ProtectedRoute roles={['PLATFORM_ADMIN']}><Organizations /></ProtectedRoute>} />
+            <Route path="/users" element={<ProtectedRoute roles={['PLATFORM_ADMIN', 'ORG_ADMIN', 'HR_ADMIN']}><Users /></ProtectedRoute>} />
+            <Route path="/employees" element={<ProtectedRoute roles={['PLATFORM_ADMIN', 'ORG_ADMIN', 'HR_ADMIN', 'MANAGER']}><Employees /></ProtectedRoute>} />
+            <Route path="/employees/new" element={<ProtectedRoute roles={['PLATFORM_ADMIN', 'ORG_ADMIN', 'HR_ADMIN']}><EmployeeForm /></ProtectedRoute>} />
+            <Route path="/employees/:id" element={<ProtectedRoute><EmployeeView /></ProtectedRoute>} />
+            <Route path="/employees/:id/edit" element={<ProtectedRoute roles={['PLATFORM_ADMIN', 'ORG_ADMIN', 'HR_ADMIN']}><EmployeeForm /></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute roles={['PLATFORM_ADMIN', 'ORG_ADMIN', 'HR_ADMIN']}><Settings /></ProtectedRoute>} />
+            <Route path="/" element={<Navigate to="/dashboard" />} />
           </Routes>
-        </Suspense>
-      </BrowserRouter>
-    </AuthProvider>
+        </ToastProvider>
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 
