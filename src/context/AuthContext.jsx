@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import api from './api';
+import api from '../api';
 
 const AuthContext = createContext(null);
 
@@ -54,31 +54,3 @@ export const AuthProvider = ({ children }) => {
   
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
-
-// API instance
-// File: src/api.js
-import axios from 'axios';
-
-const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api',
-  withCredentials: true,
-});
-
-api.interceptors.request.use(config => {
-  const token = localStorage.getItem('token');
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
-
-api.interceptors.response.use(
-  res => res,
-  err => {
-    if (err.response?.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
-    }
-    return Promise.reject(err);
-  }
-);
-
-export default api;
