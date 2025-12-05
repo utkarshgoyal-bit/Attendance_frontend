@@ -4,6 +4,13 @@ import api from '../api';
 import { Card, CardHeader, CardContent, Button, Input, Modal, Table, Th, Td, Badge, Select, useToast } from '../components/ui';
 import { Plus, Search, Edit, Lock, Power } from 'lucide-react';
 
+const ROLES = [
+  { value: 'ORG_ADMIN', label: 'Org Admin' },
+  { value: 'HR_ADMIN', label: 'HR Admin' },
+  { value: 'MANAGER', label: 'Manager' },
+  { value: 'EMPLOYEE', label: 'Employee' },
+];
+
 const Users = () => {
   const { user } = useAuth();
   const [users, setUsers] = useState([]);
@@ -17,31 +24,27 @@ const Users = () => {
   const { success, error: showError } = useToast();
 
   const fetchUsers = useCallback(async () => {
-    setLoading(true);
     try {
+      setLoading(true);
       const res = await api.get('/users', { params: { search } });
-      setUsers(res.data.users || []);
+      setUsers(res.data.users);
     } catch (err) {
+      console.error('Fetch users error:', err);
       showError(err.response?.data?.message || 'Failed to load users');
     } finally {
       setLoading(false);
     }
-  }, [search]);
+  }, [search, showError]);
 
   useEffect(() => { 
     fetchUsers(); 
   }, [fetchUsers]);
 
   const getAvailableRoles = () => {
-    const allRoles = [
-      { value: 'ORG_ADMIN', label: 'Org Admin', level: 3 },
-      { value: 'HR_ADMIN', label: 'HR Admin', level: 2 },
-      { value: 'MANAGER', label: 'Manager', level: 1 },
-      { value: 'EMPLOYEE', label: 'Employee', level: 0 },
-    ];
+    if (!user) return [];
     const hierarchy = { PLATFORM_ADMIN: 4, ORG_ADMIN: 3, HR_ADMIN: 2, MANAGER: 1, EMPLOYEE: 0 };
     const userLevel = hierarchy[user?.role] || 0;
-    return allRoles.filter(r => r.level < userLevel);
+    return ROLES.filter(r => hierarchy[r.value] < userLevel);
   };
 
   const handleSubmit = async (e) => {
@@ -81,45 +84,54 @@ const Users = () => {
       success(`User ${u.isActive ? 'deactivated' : 'activated'}`);
       fetchUsers();
     } catch (err) {
-      showError(err.response?.data?.message || 'Failed to update status');
+      showError('Failed to update status');
     }
   };
 
   const openEdit = (u) => {
     setSelectedUser(u);
-    setFormData({ email: u.email, role: u.role, password: '' });
+    setFormData({ email: u.email, role: u.role });
     setShowModal(true);
   };
 
   const openResetPassword = (u) => {
     setSelectedUser(u);
-    setNewPassword('');
     setShowPasswordModal(true);
   };
 
-  const openCreate = () => {
-    setSelectedUser(null);
-    const roles = getAvailableRoles();
-    setFormData({ email: '', password: '', role: roles.length > 0 ? roles[0].value : 'EMPLOYEE' });
-    setShowModal(true);
-  };
+  const roleColors = { PLATFORM_ADMIN: 'danger', ORG_ADMIN: 'warning', HR_ADMIN: 'info', MANAGER: 'success', EMPLOYEE: 'default' };
 
-  const roleColors = { 
-    PLATFORM_ADMIN: 'danger', 
-    ORG_ADMIN: 'warning', 
-    HR_ADMIN: 'info', 
-    MANAGER: 'success', 
-    EMPLOYEE: 'default' 
-  };
+  // Check if user has permission
+  if (!user) {
+    return <div className="p-8">Loading...</div>;
+  }
 
-  const availableRoles = getAvailableRoles();
+  if (!['PLATFORM_ADMIN', 'ORG_ADMIN', 'HR_ADMIN'].includes(user.role)) {
+    return (
+      <div className="p-8">
+        <Card>
+          <CardContent className="p-6">
+            <h2 className="text-xl font-bold text-red-600 mb-2">Access Denied</h2>
+            <p>You don't have permission to view this page.</p>
+            <p className="text-sm text-gray-600 mt-2">Required role: HR Admin or above</p>
+            <p className="text-sm text-gray-600">Your role: {user.role}</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Users</h2>
-        {availableRoles.length > 0 && (
-          <Button onClick={openCreate}>
+        {getAvailableRoles().length > 0 && (
+          <Button onClick={() => { 
+            setSelectedUser(null); 
+            const availableRoles = getAvailableRoles();
+            setFormData({ email: '', password: '', role: availableRoles[0]?.value || 'EMPLOYEE' }); 
+            setShowModal(true); 
+          }}>
             <Plus size={18} className="mr-2" /> Add User
           </Button>
         )}
@@ -129,19 +141,16 @@ const Users = () => {
         <CardHeader>
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-            <Input 
-              className="pl-10" 
-              placeholder="Search users..." 
-              value={search} 
-              onChange={e => setSearch(e.target.value)} 
-            />
+            <Input className="pl-10" placeholder="Search users..." value={search} onChange={e => setSearch(e.target.value)} />
           </div>
         </CardHeader>
         <CardContent className="p-0">
           {loading ? (
             <div className="p-8 text-center text-gray-500">Loading...</div>
           ) : users.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">No users found</div>
+            <div className="p-8 text-center text-gray-500">
+              {search ? `No users found matching "${search}"` : 'No users found'}
+            </div>
           ) : (
             <Table>
               <thead className="bg-gray-50">
@@ -185,7 +194,6 @@ const Users = () => {
         </CardContent>
       </Card>
 
-      {/* Create/Edit Modal */}
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} title={selectedUser ? 'Edit User' : 'Create User'}>
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input 
@@ -207,7 +215,7 @@ const Users = () => {
           )}
           <Select 
             label="Role" 
-            options={availableRoles} 
+            options={getAvailableRoles()} 
             value={formData.role} 
             onChange={e => setFormData({ ...formData, role: e.target.value })} 
             required 
@@ -219,7 +227,6 @@ const Users = () => {
         </form>
       </Modal>
 
-      {/* Reset Password Modal */}
       <Modal isOpen={showPasswordModal} onClose={() => setShowPasswordModal(false)} title="Reset Password">
         <form onSubmit={handleResetPassword} className="space-y-4">
           <p className="text-sm text-gray-600">Reset password for: <strong>{selectedUser?.email}</strong></p>

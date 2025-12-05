@@ -1,9 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import api from '../api';
 import { Card, CardHeader, CardContent, Button, Input, Modal, Table, Th, Td, Badge, useToast } from '../components/ui';
-import { Plus, Search, Edit, Trash2, UserPlus } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, UserPlus, Settings } from 'lucide-react';
 
 const Organizations = () => {
+  const { user } = useAuth();
   const [organizations, setOrganizations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -13,18 +16,20 @@ const Organizations = () => {
   const [formData, setFormData] = useState({ name: '', contact: { email: '', phone: '' } });
   const [adminData, setAdminData] = useState({ email: '', password: '' });
   const { success, error: showError } = useToast();
+  const navigate = useNavigate();
 
   const fetchOrganizations = useCallback(async () => {
-    setLoading(true);
     try {
+      setLoading(true);
       const res = await api.get('/organizations', { params: { search } });
-      setOrganizations(res.data.organizations || []);
+      setOrganizations(res.data.organizations);
     } catch (err) {
+      console.error('Fetch organizations error:', err);
       showError(err.response?.data?.message || 'Failed to load organizations');
     } finally {
       setLoading(false);
     }
-  }, [search]);
+  }, [search, showError]);
 
   useEffect(() => { 
     fetchOrganizations(); 
@@ -79,21 +84,38 @@ const Organizations = () => {
 
   const openAddAdmin = (org) => {
     setSelectedOrg(org);
-    setAdminData({ email: '', password: '' });
     setShowAdminModal(true);
   };
 
-  const openCreate = () => {
-    setSelectedOrg(null);
-    setFormData({ name: '', contact: { email: '', phone: '' } });
-    setShowModal(true);
-  };
+  // Check if user has permission
+  if (!user) {
+    return <div className="p-8">Loading...</div>;
+  }
+
+  if (user.role !== 'PLATFORM_ADMIN') {
+    return (
+      <div className="p-8">
+        <Card>
+          <CardContent className="p-6">
+            <h2 className="text-xl font-bold text-red-600 mb-2">Access Denied</h2>
+            <p>You don't have permission to view this page.</p>
+            <p className="text-sm text-gray-600 mt-2">Required role: Platform Admin</p>
+            <p className="text-sm text-gray-600">Your role: {user.role}</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Organizations</h2>
-        <Button onClick={openCreate}>
+        <Button onClick={() => { 
+          setSelectedOrg(null); 
+          setFormData({ name: '', contact: { email: '', phone: '' } }); 
+          setShowModal(true); 
+        }}>
           <Plus size={18} className="mr-2" /> Add Organization
         </Button>
       </div>
@@ -116,7 +138,9 @@ const Organizations = () => {
           {loading ? (
             <div className="p-8 text-center text-gray-500">Loading...</div>
           ) : organizations.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">No organizations found. Click "Add Organization" to create one.</div>
+            <div className="p-8 text-center text-gray-500">
+              {search ? `No organizations found matching "${search}"` : 'No organizations found. Click "Add Organization" to create one.'}
+            </div>
           ) : (
             <Table>
               <thead className="bg-gray-50">
@@ -151,7 +175,12 @@ const Organizations = () => {
                         <Button size="sm" variant="ghost" onClick={() => openAddAdmin(org)} title="Add Admin">
                           <UserPlus size={16} />
                         </Button>
-                        <Button size="sm" variant="ghost" onClick={() => handleToggleStatus(org)} title="Toggle Status">
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          onClick={() => handleToggleStatus(org)} 
+                          title={org.isActive ? 'Deactivate' : 'Activate'}
+                        >
                           <Trash2 size={16} className={org.isActive ? 'text-red-500' : 'text-green-500'} />
                         </Button>
                       </div>
