@@ -11,12 +11,10 @@ const FirstLogin = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
-  // Password fields
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   
-  // Security questions
   const [questions, setQuestions] = useState([]);
   const [selectedQuestions, setSelectedQuestions] = useState([
     { question: '', answer: '' },
@@ -33,7 +31,7 @@ const FirstLogin = () => {
   const fetchQuestions = async () => {
     try {
       const res = await api.get('/auth/security-questions');
-      setQuestions(res.data.map(q => ({ value: q, label: q })));
+      setQuestions(res.data);
     } catch {}
   };
 
@@ -69,6 +67,11 @@ const FirstLogin = () => {
       setError('Please fill all questions and answers');
       return;
     }
+
+    if (selectedQuestions[0].question === selectedQuestions[1].question) {
+      setError('Please select different security questions');
+      return;
+    }
     
     setLoading(true);
     try {
@@ -85,6 +88,13 @@ const FirstLogin = () => {
     setSelectedQuestions(prev => prev.map((q, i) => 
       i === index ? { ...q, [field]: value } : q
     ));
+  };
+
+  const getAvailableQuestions = (currentIndex) => {
+    const otherSelected = selectedQuestions
+      .filter((_, i) => i !== currentIndex)
+      .map(q => q.question);
+    return questions.filter(q => !otherSelected.includes(q));
   };
 
   return (
@@ -140,7 +150,10 @@ const FirstLogin = () => {
                 <div key={idx} className="space-y-2">
                   <Select
                     label={`Security Question ${idx + 1}`}
-                    options={[{ value: '', label: 'Select a question' }, ...questions]}
+                    options={[
+                      { value: '', label: 'Select a question' },
+                      ...getAvailableQuestions(idx).map(q => ({ value: q, label: q }))
+                    ]}
                     value={sq.question}
                     onChange={e => updateQuestion(idx, 'question', e.target.value)}
                     required

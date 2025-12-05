@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import { Card, CardHeader, CardContent, Button, Input, Modal, Table, Th, Td, Badge, useToast } from '../components/ui';
-import { Plus, Search, Edit, Trash2, UserPlus, Settings } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, UserPlus } from 'lucide-react';
 
 const Organizations = () => {
   const [organizations, setOrganizations] = useState([]);
@@ -14,20 +13,22 @@ const Organizations = () => {
   const [formData, setFormData] = useState({ name: '', contact: { email: '', phone: '' } });
   const [adminData, setAdminData] = useState({ email: '', password: '' });
   const { success, error: showError } = useToast();
-  const navigate = useNavigate();
 
   const fetchOrganizations = useCallback(async () => {
+    setLoading(true);
     try {
       const res = await api.get('/organizations', { params: { search } });
-      setOrganizations(res.data.organizations);
+      setOrganizations(res.data.organizations || []);
     } catch (err) {
-      showError('Failed to load organizations');
+      showError(err.response?.data?.message || 'Failed to load organizations');
     } finally {
       setLoading(false);
     }
-  }, [search, showError]);
+  }, [search]);
 
-  useEffect(() => { fetchOrganizations(); }, [fetchOrganizations]);
+  useEffect(() => { 
+    fetchOrganizations(); 
+  }, [fetchOrganizations]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -72,20 +73,27 @@ const Organizations = () => {
 
   const openEdit = (org) => {
     setSelectedOrg(org);
-    setFormData({ name: org.name, contact: org.contact || {} });
+    setFormData({ name: org.name, contact: org.contact || { email: '', phone: '' } });
     setShowModal(true);
   };
 
   const openAddAdmin = (org) => {
     setSelectedOrg(org);
+    setAdminData({ email: '', password: '' });
     setShowAdminModal(true);
+  };
+
+  const openCreate = () => {
+    setSelectedOrg(null);
+    setFormData({ name: '', contact: { email: '', phone: '' } });
+    setShowModal(true);
   };
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Organizations</h2>
-        <Button onClick={() => { setSelectedOrg(null); setFormData({ name: '', contact: { email: '', phone: '' } }); setShowModal(true); }}>
+        <Button onClick={openCreate}>
           <Plus size={18} className="mr-2" /> Add Organization
         </Button>
       </div>
@@ -108,7 +116,7 @@ const Organizations = () => {
           {loading ? (
             <div className="p-8 text-center text-gray-500">Loading...</div>
           ) : organizations.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">No organizations found</div>
+            <div className="p-8 text-center text-gray-500">No organizations found. Click "Add Organization" to create one.</div>
           ) : (
             <Table>
               <thead className="bg-gray-50">
@@ -142,9 +150,6 @@ const Organizations = () => {
                         </Button>
                         <Button size="sm" variant="ghost" onClick={() => openAddAdmin(org)} title="Add Admin">
                           <UserPlus size={16} />
-                        </Button>
-                        <Button size="sm" variant="ghost" onClick={() => navigate(`/organizations/${org._id}/setup`)} title="Setup">
-                          <Settings size={16} />
                         </Button>
                         <Button size="sm" variant="ghost" onClick={() => handleToggleStatus(org)} title="Toggle Status">
                           <Trash2 size={16} className={org.isActive ? 'text-red-500' : 'text-green-500'} />
