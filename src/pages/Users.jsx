@@ -12,7 +12,7 @@ const ROLES = [
 ];
 
 const Users = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -24,21 +24,42 @@ const Users = () => {
   const { success, error: showError } = useToast();
 
   const fetchUsers = useCallback(async () => {
+    // Don't fetch if still loading auth or no user
+    if (authLoading || !user) {
+      console.log('Users: Skipping fetch - auth loading or no user');
+      return;
+    }
+
+    // Check token exists
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('Users: No token found!');
+      return;
+    }
+
     try {
+      console.log('Users: Fetching with token...');
       setLoading(true);
       const res = await api.get('/users', { params: { search } });
+      console.log('Users: Data received:', res.data);
       setUsers(res.data.users);
     } catch (err) {
-      console.error('Fetch users error:', err);
-      showError(err.response?.data?.message || 'Failed to load users');
+      console.error('Users: Fetch error:', err);
+      if (err.response?.status !== 401) {
+        showError(err.response?.data?.message || 'Failed to load users');
+      }
     } finally {
       setLoading(false);
     }
-  }, [search, showError]);
+  }, [search, authLoading, user, showError]);
 
-  useEffect(() => { 
-    fetchUsers(); 
-  }, [fetchUsers]);
+  // Only fetch when user is ready
+  useEffect(() => {
+    if (!authLoading && user) {
+      console.log('Users: User is ready, fetching data...');
+      fetchUsers();
+    }
+  }, [authLoading, user, fetchUsers]);
 
   const getAvailableRoles = () => {
     if (!user) return [];
@@ -101,9 +122,29 @@ const Users = () => {
 
   const roleColors = { PLATFORM_ADMIN: 'danger', ORG_ADMIN: 'warning', HR_ADMIN: 'info', MANAGER: 'success', EMPLOYEE: 'default' };
 
+  // Show loading while auth is loading
+  if (authLoading) {
+    return (
+      <div className="p-8">
+        <div className="flex items-center justify-center">
+          <div className="text-gray-500">Loading authentication...</div>
+        </div>
+      </div>
+    );
+  }
+
   // Check if user has permission
   if (!user) {
-    return <div className="p-8">Loading...</div>;
+    return (
+      <div className="p-8">
+        <Card>
+          <CardContent className="p-6">
+            <h2 className="text-xl font-bold text-red-600 mb-2">Not Logged In</h2>
+            <p>Please log in to access this page.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   if (!['PLATFORM_ADMIN', 'ORG_ADMIN', 'HR_ADMIN'].includes(user.role)) {
