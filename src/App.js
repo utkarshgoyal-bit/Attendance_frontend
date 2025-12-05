@@ -11,6 +11,7 @@ import Employees from './pages/Employees';
 import EmployeeForm from './pages/EmployeeForm';
 import EmployeeView from './pages/EmployeeView';
 import Settings from './pages/Settings';
+import DiagnosticPage from './pages/DiagnosticPage';
 
 const ProtectedRoute = ({ children, roles }) => {
   const { user, loading } = useAuth();
@@ -49,6 +50,7 @@ function App() {
             <Route path="/employees/:id/edit" element={<ProtectedRoute roles={['PLATFORM_ADMIN', 'ORG_ADMIN', 'HR_ADMIN']}><EmployeeForm /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute roles={['PLATFORM_ADMIN', 'ORG_ADMIN', 'HR_ADMIN']}><Settings /></ProtectedRoute>} />
             <Route path="/" element={<Navigate to="/dashboard" />} />
+            <Route path="/diagnostic" element={<ProtectedRoute><DiagnosticPage /></ProtectedRoute>} />
           </Routes>
         </ToastProvider>
       </AuthProvider>

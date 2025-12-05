@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api';
 import { Card, CardHeader, CardContent, Button, Input, Modal, Table, Th, Td, Badge, useToast } from '../components/ui';
-import { Plus, Search, Edit, Trash2, UserPlus, Settings } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, UserPlus } from 'lucide-react';
 
 const Organizations = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [organizations, setOrganizations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -19,21 +19,46 @@ const Organizations = () => {
   const navigate = useNavigate();
 
   const fetchOrganizations = useCallback(async () => {
+    // Don't fetch if still loading auth or no user
+    if (authLoading || !user) {
+      console.log('Organizations: Skipping fetch - auth loading or no user');
+      return;
+    }
+
+    // Check token exists
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('Organizations: No token found!');
+      showError('Session expired. Please login again.');
+      navigate('/login');
+      return;
+    }
+
     try {
+      console.log('Organizations: Fetching with token...');
       setLoading(true);
       const res = await api.get('/organizations', { params: { search } });
+      console.log('Organizations: Data received:', res.data);
       setOrganizations(res.data.organizations);
     } catch (err) {
-      console.error('Fetch organizations error:', err);
-      showError(err.response?.data?.message || 'Failed to load organizations');
+      console.error('Organizations: Fetch error:', err);
+      
+      // Only show error if it's not a 401 (auth issue)
+      if (err.response?.status !== 401) {
+        showError(err.response?.data?.message || 'Failed to load organizations');
+      }
     } finally {
       setLoading(false);
     }
-  }, [search, showError]);
+  }, [search, authLoading, user, showError, navigate]);
 
-  useEffect(() => { 
-    fetchOrganizations(); 
-  }, [fetchOrganizations]);
+  // Only fetch when user is ready
+  useEffect(() => {
+    if (!authLoading && user) {
+      console.log('Organizations: User is ready, fetching data...');
+      fetchOrganizations();
+    }
+  }, [authLoading, user, fetchOrganizations]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -87,9 +112,29 @@ const Organizations = () => {
     setShowAdminModal(true);
   };
 
+  // Show loading while auth is loading
+  if (authLoading) {
+    return (
+      <div className="p-8">
+        <div className="flex items-center justify-center">
+          <div className="text-gray-500">Loading authentication...</div>
+        </div>
+      </div>
+    );
+  }
+
   // Check if user has permission
   if (!user) {
-    return <div className="p-8">Loading...</div>;
+    return (
+      <div className="p-8">
+        <Card>
+          <CardContent className="p-6">
+            <h2 className="text-xl font-bold text-red-600 mb-2">Not Logged In</h2>
+            <p>Please log in to access this page.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   if (user.role !== 'PLATFORM_ADMIN') {
