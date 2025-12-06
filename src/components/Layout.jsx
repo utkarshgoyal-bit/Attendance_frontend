@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   Building2, Users, LayoutDashboard, LogOut, Menu, X, ChevronDown,
-  Settings, Bell, User
+  Settings, Bell, User, Clock, CheckCircle
 } from 'lucide-react';
 
 const Layout = ({ children }) => {
@@ -15,7 +15,7 @@ const Layout = ({ children }) => {
 
   const handleLogout = async () => {
     await logout();
-    navigate('/login', { replace: true }); // Use replace to prevent back button issues
+    navigate('/login', { replace: true });
   };
 
   const navItems = {
@@ -27,12 +27,16 @@ const Layout = ({ children }) => {
     ORG_ADMIN: [
       { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
       { path: '/employees', icon: Users, label: 'Employees' },
+      { path: '/attendance', icon: Clock, label: 'Attendance' },
+      { path: '/attendance/approvals', icon: CheckCircle, label: 'Approvals' },
       { path: '/settings', icon: Settings, label: 'Settings' },
       { path: '/users', icon: Users, label: 'Users' },
     ],
     HR_ADMIN: [
       { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
       { path: '/employees', icon: Users, label: 'Employees' },
+      { path: '/attendance', icon: Clock, label: 'Attendance' },
+      { path: '/attendance/approvals', icon: CheckCircle, label: 'Approvals' },
       { path: '/settings', icon: Settings, label: 'Settings' },
       { path: '/users', icon: Users, label: 'Users' },
     ],
@@ -40,12 +44,11 @@ const Layout = ({ children }) => {
       { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
       { path: '/employees', icon: Users, label: 'My Team' },
       { path: '/attendance', icon: Clock, label: 'Attendance' },
-      { path: '/attendance/approvals', icon: CheckCircle, label: 'Approvals' }, // Only for Manager+
-      { path: '/attendance', icon: Clock, label: 'Attendance' },
-      { path: '/attendance/approvals', icon: CheckCircle, label: 'Approvals' }, // For Manager+
+      { path: '/attendance/approvals', icon: CheckCircle, label: 'Approvals' },
     ],
     EMPLOYEE: [
       { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+      { path: '/attendance', icon: Clock, label: 'Attendance' },
     ],
   };
 
@@ -67,8 +70,9 @@ const Layout = ({ children }) => {
             <Link
               key={item.path}
               to={item.path}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${location.pathname === item.path ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-100'
-                }`}
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                location.pathname === item.path ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-100'
+              }`}
             >
               <item.icon size={20} />
               {sidebarOpen && <span>{item.label}</span>}

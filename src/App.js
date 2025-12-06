@@ -11,7 +11,6 @@ import Employees from './pages/Employees';
 import EmployeeForm from './pages/EmployeeForm';
 import EmployeeView from './pages/EmployeeView';
 import Settings from './pages/Settings';
-import DiagnosticPage from './pages/DiagnosticPage';
 import Attendance from './pages/Attendance';
 import AttendanceApprovals from './pages/AttendanceApprovals';
 
@@ -51,12 +50,9 @@ function App() {
             <Route path="/employees/:id" element={<ProtectedRoute><EmployeeView /></ProtectedRoute>} />
             <Route path="/employees/:id/edit" element={<ProtectedRoute roles={['PLATFORM_ADMIN', 'ORG_ADMIN', 'HR_ADMIN']}><EmployeeForm /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute roles={['PLATFORM_ADMIN', 'ORG_ADMIN', 'HR_ADMIN']}><Settings /></ProtectedRoute>} />
+            <Route path="/attendance" element={<ProtectedRoute><Attendance /></ProtectedRoute>} />
+            <Route path="/attendance/approvals" element={<ProtectedRoute roles={['MANAGER', 'HR_ADMIN', 'ORG_ADMIN']}><AttendanceApprovals /></ProtectedRoute>} />
             <Route path="/" element={<Navigate to="/dashboard" />} />
-            <Route path="/diagnostic" element={<ProtectedRoute><DiagnosticPage /></ProtectedRoute>} />
-            <Route path="/attendance" element={<ProtectedRoute><Attendance /></ProtectedRoute>} />
-            <Route path="/attendance/approvals" element={<ProtectedRoute roles={['MANAGER', 'HR_ADMIN', 'ORG_ADMIN']}><AttendanceApprovals /></ProtectedRoute>} />
-            <Route path="/attendance" element={<ProtectedRoute><Attendance /></ProtectedRoute>} />
-            <Route path="/attendance/approvals" element={<ProtectedRoute roles={['MANAGER', 'HR_ADMIN', 'ORG_ADMIN']}><AttendanceApprovals /></ProtectedRoute>} />
           </Routes>
         </ToastProvider>
       </AuthProvider>
