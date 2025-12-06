@@ -39,6 +39,8 @@ const Layout = ({ children }) => {
     MANAGER: [
       { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
       { path: '/employees', icon: Users, label: 'My Team' },
+      { path: '/attendance', icon: Clock, label: 'Attendance' },
+      { path: '/attendance/approvals', icon: CheckCircle, label: 'Approvals' }, // Only for Manager+
     ],
     EMPLOYEE: [
       { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },

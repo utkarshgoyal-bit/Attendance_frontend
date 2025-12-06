@@ -51,6 +51,8 @@ function App() {
             <Route path="/settings" element={<ProtectedRoute roles={['PLATFORM_ADMIN', 'ORG_ADMIN', 'HR_ADMIN']}><Settings /></ProtectedRoute>} />
             <Route path="/" element={<Navigate to="/dashboard" />} />
             <Route path="/diagnostic" element={<ProtectedRoute><DiagnosticPage /></ProtectedRoute>} />
+            <Route path="/attendance" element={<ProtectedRoute><Attendance /></ProtectedRoute>} />
+            <Route path="/attendance/approvals" element={<ProtectedRoute roles={['MANAGER', 'HR_ADMIN', 'ORG_ADMIN']}><AttendanceApprovals /></ProtectedRoute>} />
           </Routes>
         </ToastProvider>
       </AuthProvider>
