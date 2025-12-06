@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   Building2, Users, LayoutDashboard, LogOut, Menu, X, ChevronDown,
-  Settings, Bell, User, Clock, CheckCircle
+  Settings, Bell, User, Clock, CheckCircle, Umbrella, Award, Calendar
 } from 'lucide-react';
 
 const Layout = ({ children }) => {
@@ -28,7 +28,10 @@ const Layout = ({ children }) => {
       { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
       { path: '/employees', icon: Users, label: 'Employees' },
       { path: '/attendance', icon: Clock, label: 'Attendance' },
-      { path: '/attendance/approvals', icon: CheckCircle, label: 'Approvals' },
+      { path: '/attendance/approvals', icon: CheckCircle, label: 'Attendance Approvals' },
+      { path: '/leaves', icon: Umbrella, label: 'Leaves' },
+      { path: '/leaves/approvals', icon: CheckCircle, label: 'Leave Approvals' },
+      { path: '/leaves/calendar', icon: Calendar, label: 'Leave Calendar' },
       { path: '/settings', icon: Settings, label: 'Settings' },
       { path: '/users', icon: Users, label: 'Users' },
     ],
@@ -36,7 +39,10 @@ const Layout = ({ children }) => {
       { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
       { path: '/employees', icon: Users, label: 'Employees' },
       { path: '/attendance', icon: Clock, label: 'Attendance' },
-      { path: '/attendance/approvals', icon: CheckCircle, label: 'Approvals' },
+      { path: '/attendance/approvals', icon: CheckCircle, label: 'Attendance Approvals' },
+      { path: '/leaves', icon: Umbrella, label: 'Leaves' },
+      { path: '/leaves/approvals', icon: CheckCircle, label: 'Leave Approvals' },
+      { path: '/leaves/calendar', icon: Calendar, label: 'Leave Calendar' },
       { path: '/settings', icon: Settings, label: 'Settings' },
       { path: '/users', icon: Users, label: 'Users' },
     ],
@@ -44,11 +50,17 @@ const Layout = ({ children }) => {
       { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
       { path: '/employees', icon: Users, label: 'My Team' },
       { path: '/attendance', icon: Clock, label: 'Attendance' },
-      { path: '/attendance/approvals', icon: CheckCircle, label: 'Approvals' },
+      { path: '/attendance/approvals', icon: CheckCircle, label: 'Attendance Approvals' },
+      { path: '/leaves', icon: Umbrella, label: 'My Leaves' },
+      { path: '/leaves/balance', icon: Award, label: 'Leave Balance' },
+      { path: '/leaves/approvals', icon: CheckCircle, label: 'Leave Approvals' },
+      { path: '/leaves/calendar', icon: Calendar, label: 'Team Calendar' },
     ],
     EMPLOYEE: [
       { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
       { path: '/attendance', icon: Clock, label: 'Attendance' },
+      { path: '/leaves', icon: Umbrella, label: 'My Leaves' },
+      { path: '/leaves/balance', icon: Award, label: 'Leave Balance' },
     ],
   };
 
@@ -65,7 +77,7 @@ const Layout = ({ children }) => {
           </button>
         </div>
 
-        <nav className="p-4 space-y-2">
+        <nav className="p-4 space-y-2 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 4rem)' }}>
           {items.map(item => (
             <Link
               key={item.path}
@@ -73,9 +85,10 @@ const Layout = ({ children }) => {
               className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                 location.pathname === item.path ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-100'
               }`}
+              title={!sidebarOpen ? item.label : ''}
             >
               <item.icon size={20} />
-              {sidebarOpen && <span>{item.label}</span>}
+              {sidebarOpen && <span className="text-sm">{item.label}</span>}
             </Link>
           ))}
         </nav>

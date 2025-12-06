@@ -13,6 +13,10 @@ import EmployeeView from './pages/EmployeeView';
 import Settings from './pages/Settings';
 import Attendance from './pages/Attendance';
 import AttendanceApprovals from './pages/AttendanceApprovals';
+import Leaves from './pages/Leaves';
+import LeaveApprovals from './pages/LeaveApprovals';
+import LeaveBalance from './pages/LeaveBalance';
+import LeaveCalendar from './pages/LeaveCalendar';
 
 const ProtectedRoute = ({ children, roles }) => {
   const { user, loading } = useAuth();
@@ -43,15 +47,30 @@ function App() {
             <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
             <Route path="/first-login" element={<FirstLogin />} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            
+            {/* Organizations & Users */}
             <Route path="/organizations" element={<ProtectedRoute roles={['PLATFORM_ADMIN']}><Organizations /></ProtectedRoute>} />
             <Route path="/users" element={<ProtectedRoute roles={['PLATFORM_ADMIN', 'ORG_ADMIN', 'HR_ADMIN']}><Users /></ProtectedRoute>} />
+            
+            {/* Employees */}
             <Route path="/employees" element={<ProtectedRoute roles={['PLATFORM_ADMIN', 'ORG_ADMIN', 'HR_ADMIN', 'MANAGER']}><Employees /></ProtectedRoute>} />
             <Route path="/employees/new" element={<ProtectedRoute roles={['PLATFORM_ADMIN', 'ORG_ADMIN', 'HR_ADMIN']}><EmployeeForm /></ProtectedRoute>} />
             <Route path="/employees/:id" element={<ProtectedRoute><EmployeeView /></ProtectedRoute>} />
             <Route path="/employees/:id/edit" element={<ProtectedRoute roles={['PLATFORM_ADMIN', 'ORG_ADMIN', 'HR_ADMIN']}><EmployeeForm /></ProtectedRoute>} />
+            
+            {/* Settings */}
             <Route path="/settings" element={<ProtectedRoute roles={['PLATFORM_ADMIN', 'ORG_ADMIN', 'HR_ADMIN']}><Settings /></ProtectedRoute>} />
+            
+            {/* Attendance */}
             <Route path="/attendance" element={<ProtectedRoute><Attendance /></ProtectedRoute>} />
             <Route path="/attendance/approvals" element={<ProtectedRoute roles={['MANAGER', 'HR_ADMIN', 'ORG_ADMIN']}><AttendanceApprovals /></ProtectedRoute>} />
+            
+            {/* Leaves - NEW */}
+            <Route path="/leaves" element={<ProtectedRoute><Leaves /></ProtectedRoute>} />
+            <Route path="/leaves/balance" element={<ProtectedRoute><LeaveBalance /></ProtectedRoute>} />
+            <Route path="/leaves/approvals" element={<ProtectedRoute roles={['MANAGER', 'HR_ADMIN', 'ORG_ADMIN']}><LeaveApprovals /></ProtectedRoute>} />
+            <Route path="/leaves/calendar" element={<ProtectedRoute roles={['MANAGER', 'HR_ADMIN', 'ORG_ADMIN']}><LeaveCalendar /></ProtectedRoute>} />
+            
             <Route path="/" element={<Navigate to="/dashboard" />} />
           </Routes>
         </ToastProvider>
