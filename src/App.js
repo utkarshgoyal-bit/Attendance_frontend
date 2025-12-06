@@ -12,24 +12,26 @@ import EmployeeForm from './pages/EmployeeForm';
 import EmployeeView from './pages/EmployeeView';
 import Settings from './pages/Settings';
 import DiagnosticPage from './pages/DiagnosticPage';
+import Attendance from './pages/Attendance';
+import AttendanceApprovals from './pages/AttendanceApprovals';
 
 const ProtectedRoute = ({ children, roles }) => {
   const { user, loading } = useAuth();
-  
+
   if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   if (!user) return <Navigate to="/login" />;
   if (user.isFirstLogin || !user.hasSecurityQuestions) return <Navigate to="/first-login" />;
   if (roles && !roles.includes(user.role)) return <Navigate to="/dashboard" />;
-  
+
   return <Layout>{children}</Layout>;
 };
 
 const PublicRoute = ({ children }) => {
   const { user, loading } = useAuth();
-  
+
   if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   if (user && !user.isFirstLogin && user.hasSecurityQuestions) return <Navigate to="/dashboard" />;
-  
+
   return children;
 };
 
@@ -51,6 +53,8 @@ function App() {
             <Route path="/settings" element={<ProtectedRoute roles={['PLATFORM_ADMIN', 'ORG_ADMIN', 'HR_ADMIN']}><Settings /></ProtectedRoute>} />
             <Route path="/" element={<Navigate to="/dashboard" />} />
             <Route path="/diagnostic" element={<ProtectedRoute><DiagnosticPage /></ProtectedRoute>} />
+            <Route path="/attendance" element={<ProtectedRoute><Attendance /></ProtectedRoute>} />
+            <Route path="/attendance/approvals" element={<ProtectedRoute roles={['MANAGER', 'HR_ADMIN', 'ORG_ADMIN']}><AttendanceApprovals /></ProtectedRoute>} />
             <Route path="/attendance" element={<ProtectedRoute><Attendance /></ProtectedRoute>} />
             <Route path="/attendance/approvals" element={<ProtectedRoute roles={['MANAGER', 'HR_ADMIN', 'ORG_ADMIN']}><AttendanceApprovals /></ProtectedRoute>} />
           </Routes>

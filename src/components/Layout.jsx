@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { 
+import {
   Building2, Users, LayoutDashboard, LogOut, Menu, X, ChevronDown,
   Settings, Bell, User
 } from 'lucide-react';
@@ -41,6 +41,8 @@ const Layout = ({ children }) => {
       { path: '/employees', icon: Users, label: 'My Team' },
       { path: '/attendance', icon: Clock, label: 'Attendance' },
       { path: '/attendance/approvals', icon: CheckCircle, label: 'Approvals' }, // Only for Manager+
+      { path: '/attendance', icon: Clock, label: 'Attendance' },
+      { path: '/attendance/approvals', icon: CheckCircle, label: 'Approvals' }, // For Manager+
     ],
     EMPLOYEE: [
       { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -59,15 +61,14 @@ const Layout = ({ children }) => {
             {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
-        
+
         <nav className="p-4 space-y-2">
           {items.map(item => (
             <Link
               key={item.path}
               to={item.path}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                location.pathname === item.path ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-100'
-              }`}
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${location.pathname === item.path ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-100'
+                }`}
             >
               <item.icon size={20} />
               {sidebarOpen && <span>{item.label}</span>}
@@ -83,14 +84,14 @@ const Layout = ({ children }) => {
           <h1 className="text-lg font-semibold">
             {items.find(i => i.path === location.pathname)?.label || 'Dashboard'}
           </h1>
-          
+
           <div className="flex items-center gap-4">
             <button className="p-2 hover:bg-gray-100 rounded-lg relative">
               <Bell size={20} />
             </button>
-            
+
             <div className="relative">
-              <button 
+              <button
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
                 className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded-lg"
               >
@@ -104,7 +105,7 @@ const Layout = ({ children }) => {
                   </>
                 )}
               </button>
-              
+
               {userMenuOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border py-2 z-50">
                   <div className="px-4 py-2 border-b">
