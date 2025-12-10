@@ -29,6 +29,7 @@ const Layout = ({ children }) => {
       { path: '/employees', icon: Users, label: 'Employees' },
       { path: '/attendance', icon: Clock, label: 'Attendance' },
       { path: '/attendance/approvals', icon: CheckCircle, label: 'Attendance Approvals' },
+      { path: '/attendance/calendar', icon: Calendar, label: 'Calendar View' },
       { path: '/leaves', icon: Umbrella, label: 'Leaves' },
       { path: '/leaves/approvals', icon: CheckCircle, label: 'Leave Approvals' },
       { path: '/leaves/calendar', icon: Calendar, label: 'Leave Calendar' },
@@ -45,6 +46,7 @@ const Layout = ({ children }) => {
       { path: '/leaves/calendar', icon: Calendar, label: 'Leave Calendar' },
       { path: '/settings', icon: Settings, label: 'Settings' },
       { path: '/users', icon: Users, label: 'Users' },
+      { path: '/attendance/calendar', icon: Calendar, label: 'Calendar View' }
     ],
     MANAGER: [
       { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -55,12 +57,14 @@ const Layout = ({ children }) => {
       { path: '/leaves/balance', icon: Award, label: 'Leave Balance' },
       { path: '/leaves/approvals', icon: CheckCircle, label: 'Leave Approvals' },
       { path: '/leaves/calendar', icon: Calendar, label: 'Team Calendar' },
+      { path: '/attendance/calendar', icon: Calendar, label: 'Calendar View' }
     ],
     EMPLOYEE: [
       { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
       { path: '/attendance', icon: Clock, label: 'Attendance' },
       { path: '/leaves', icon: Umbrella, label: 'My Leaves' },
       { path: '/leaves/balance', icon: Award, label: 'Leave Balance' },
+   { path: '/attendance/calendar', icon: Calendar, label: 'Calendar View' }
     ],
   };
 

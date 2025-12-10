@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../api';
 import { Card, CardHeader, CardContent, Button, Badge, useToast } from '../components/ui';
 import { ArrowLeft, Edit, Mail, Phone, Calendar, Building2, User, FileText } from 'lucide-react';
+import DocumentsSection from '../components/DocumentsSection';
 
 const EmployeeView = () => {
   const { id } = useParams();
@@ -151,6 +152,8 @@ const EmployeeView = () => {
             )}
           </CardContent>
         </Card>
+        {/* Documents Section */}
+   <DocumentsSection employeeId={id} />
       </div>
     </div>
   );
