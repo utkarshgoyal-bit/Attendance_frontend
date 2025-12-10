@@ -17,6 +17,7 @@ import Leaves from './pages/Leaves';
 import LeaveApprovals from './pages/LeaveApprovals';
 import LeaveBalance from './pages/LeaveBalance';
 import LeaveCalendar from './pages/LeaveCalendar';
+import AttendanceCalendar from './pages/AttendanceCalendar';
 
 const ProtectedRoute = ({ children, roles }) => {
   const { user, loading } = useAuth();
